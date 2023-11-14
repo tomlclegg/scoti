@@ -42,11 +42,15 @@ if (bymetier==FALSE) {
 if (boat_samp==FALSE) {
 monitored<-sample(c(1:dim(fishing)[1]),floor(pmonitor*dim(fishing)[1]),replace=FALSE) # sample without replacement
 fishing_monitored<-fishing[monitored,]
+  if (p_haul_obs<1) {
 not_observed<-sample(c(1:dim(fishing_monitored)[1]),floor((1-p_haul_obs)*dim(fishing_monitored)[1]),replace=FALSE)
 fishing_monitored$bycatch[not_observed]<-0
 fishing_monitored$nbycatch[not_observed]<-0
+    }
+  if (detect_prob<1) {
 fishing_monitored$nbycatch<-sapply(fishing_monitored$nbycatch,function(x) rbinom(1,x,detect_prob))
-
+}
+                                   
 BPUE_est[j]<-(sum(fishing_monitored$nbycatch)/length(monitored))
 
 } else {
@@ -60,11 +64,16 @@ boat_sampled<-sample(boat_sampled,size=floor(length(boat_sampled)*(1-refusal_rat
 fleet_sampled<-fishing[fishing$boat%in%boat_sampled,]
 monitored<-sample(c(1:dim(fleet_sampled)[1]),floor(pmonitor*dim(fleet_sampled)[1]),replace=FALSE) # sample without replacement
 fishing_monitored<-fleet_sampled[monitored,]
+
+if (p_haul_obs<1) {
 not_observed<-sample(c(1:dim(fishing_monitored)[1]),floor((1-p_haul_obs)*dim(fishing_monitored)[1]),replace=FALSE)
 fishing_monitored$bycatch[not_observed]<-0
 fishing_monitored$nbycatch[not_observed]<-0
+  }
+if (detect_prob<1) {
 fishing_monitored$nbycatch<-sapply(fishing_monitored$nbycatch,function(x) rbinom(1,x,detect_prob))
-
+}
+                                   
 BPUE_est[j]<-(sum(fishing_monitored$nbycatch)/length(monitored))
 }
 
