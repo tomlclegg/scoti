@@ -6,6 +6,9 @@
 source("make_fishing_year_metier.r")
 source("monitor_BPUE_metier.R")
 
+# Libraries
+library(dplyr)
+
 # Simulate the true state of the fishery
 p.metier <- 1
 p.bycatch <- 0.12 # range is from 0.02 to 0.12
@@ -64,3 +67,36 @@ print(obs_fishing)
 BPUE_bias <- (obs_fishing$BPUE_est - BPUE_real) / BPUE_real
 cat("BPUE_bias = ", BPUE_bias, "\n")
 print(obs_fishing)
+
+
+# Test 'spatial' function -------------------------------------------------
+source("make_fishing_year_metier_space.R")
+# Added params for when you're using the spatial version of the fn
+narea <- 10
+spatio.temporal.fishery.trend <- TRUE # this turns on or off the other spatial/temporal 
+spatio.temporal.bycatch.trend <- TRUE
+spatial.effort.skewness.general <- c(1,1)
+spatial.effort.skewness.special <- c(1.7,0.3)
+time.periods.fishery <- 32:60
+time.periods.bycatch <- 32:60 
+
+fishing_spatial <- make_fishing_year_metier_space(mean.bycatch.event = mean.bycatch.event,
+                               mean.bycatch.large.event = mean.bycatch.large.event,
+                               p.large.event = p.large.event,
+                               nboat = nboat,
+                               mean.fishing.event.boat.day = mean.fishing.event.boat.day,
+                               p.bycatch = p.bycatch,
+                               p.metier = p.metier,
+                               narea = narea,
+                               stochastic = stochastic,
+                               spatio.temporal.fishery.trend = spatio.temporal.fishery.trend,
+                               spatio.temporal.bycatch.trend = spatio.temporal.bycatch.trend,
+                               spatial.effort.skewness.general =spatial.effort.skewness.general,
+                               spatial.effort.skewness.special = spatial.effort.skewness.special,
+                               time.periods.fishery = time.periods.fishery, 
+                               time.periods.bycatch = time.periods.bycatch,
+                               hotspot.area = 10)
+fishing_spatial |>
+  dplyr::mutate(day_type = case_when(fishing.day >=32 & fishing.day <=60 ~ "special",TRUE ~ "regular")) |>
+  dplyr::group_by(area,day_type) |>
+  dplyr::summarize(mean(bycatch))

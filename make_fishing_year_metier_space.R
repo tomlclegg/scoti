@@ -1,23 +1,40 @@
 # Introducing area and time variability
 
 ## treating at first as two 'high res' metier categories, so say metier level 6 for a fishing year inspected at level 4
-
 # parameters controlling fishery effort allocation and bycatch hot spot areas, relative to time
-# narea<-10 #defines how many areas you want
-# spatial.effort.skewness.general<-c(1,1) #alpha and beta parameters from the in beta-binomial distribution, X∼BB(n,α,β). If α=β=1, then it is a discrete uniform distribution, if α≥1 and β<1 then it is a discrete left-skewed distribution.
 # spatial.effort.skewness.special<-c(1.7,0.3)# for time periods with different distribution
-# time.periods.fishery<-32:60 #time of year you want the within area effort to shift, could be several periods (uses spatial.effort.skewness.special )
-# time.periods.bycatch<-32:60#if similar as time.periods.fishery
-# hostspot.area<-10 #define area(s) that you would like to be hotspots for bycatch
-# ##
+
+#' Making fishing year with spatial and spatiotemporal effects
+#'
+#' @param mean.bycatch.event
+#' @param mean.bycatch.large.event
+#' @param p.large.event
+#' @param nboat 
+#' @param mean.fishing.event.boat.day
+#' @param p.bycatch
+#' @param p.metier
+#' @param narea - integer. defines how many areas you want.
+#' @param stochastic
+#' @param spatio.temporal.fishery.trend logical (TRUE/FALSE).
+#' @param spatio.temporal.bycatch.trend logical (TRUE/FALSE).
+#' @param spatial.effort.skewness.general vector. alpha and beta parameters from the in beta-binomial distribution, X∼BB(n,α,β). If α=β=1, then it is a discrete uniform distribution, if α≥1 and β<1 then it is a discrete left-skewed distribution.
+#' @param spatial.effort.skewness.special vector. for time periods with different distribution. 
+#' @param time.periods.fishery #time of year you want the within area effort to shift, could be several periods (uses spatial.effort.skewness.special )
+#' @param time.periods.bycatch
+#' @param hotspot.area define area(s) that you would like to be hotspots for bycatch
+#'
+#' @return
+#' @export
+#'
+#' @examples
 make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.large.event = 20, p.large.event = 0.01,
-                                     nboat = 100, mean.fishing.event.boat.day = 2, p.bycatch = c(0.1, .01), p.metier = c(.2, .8),
-                                     narea = 10, stochastic = TRUE, spatio.temporal.fishery.trend = TRUE, spatio.temporal.bycatch.trend = TRUE,
-                                     spatial.effort.skewness.general = c(1, 1), spatial.effort.skewness.special = c(1.7, 0.3),
-                                     time.periods.fishery = 32:60, time.periods.bycatch = 32:60, hostspot.area = 10) {
+                                           nboat = 100, mean.fishing.event.boat.day = 2, p.bycatch = c(0.1, .01), p.metier = c(.2, .8),
+                                           narea = 10, stochastic = TRUE, spatio.temporal.fishery.trend = TRUE, spatio.temporal.bycatch.trend = TRUE,
+                                           spatial.effort.skewness.general = c(1, 1), spatial.effort.skewness.special = c(1.7, 0.3),
+                                           time.periods.fishery = 32:60, time.periods.bycatch = 32:60, hotspot.area = 10) {
   # p.metier is the proportion of vessel in the, here, length of p.bycatch metiers
   # p bycatch event alternative distribution particularly for low density species
-
+  require(extraDistr)
   nmetier <- length(p.bycatch)
 
   fishing.day <- 1:365
@@ -72,9 +89,9 @@ make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.
     # enable change in fishery density in specific areas and time periods
     tryCatch(
       {
-        bycatch_high <- temp[temp$fishing.day %in% time.periods.bycatch & temp$area %in% hostspot.area, ]
+        bycatch_high <- temp[temp$fishing.day %in% time.periods.bycatch & temp$area %in% hotspot.area, ]
         bycatch_high$bycatch <- bycatch <- rbinom(sum(fishing.event.per.boat), 1, p.bycatch[rep(metier, fishing.event.per.boat)] * 2)
-        bycatch_low <- temp[!temp$fishing.day %in% time.periods.bycatch & !temp$area %in% hostspot.area, ]
+        bycatch_low <- temp[!temp$fishing.day %in% time.periods.bycatch & !temp$area %in% hotspot.area, ]
         bycatch_low$bycatch <- bycatch <- rbinom(sum(fishing.event.per.boat), 1, p.bycatch[rep(metier, fishing.event.per.boat)])
         fisherydata <- rbind(bycatch_high, bycatch_low)
       },
@@ -90,4 +107,3 @@ make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.
   ## so for this challenge we need to change the computation of the estimated total bycatch it becomes the estimated BPUE x estimated effort
   return(fishing)
 }
-
