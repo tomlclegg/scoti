@@ -25,7 +25,7 @@ source("https://raw.githubusercontent.com/dlusseau/scoti/main/monitor_BPUE_metie
 
 Secondly, we use the make\_fishing\_year\_metier function to simulate the fishery in the case study. The first parameter (nboat) is the size of the active fishing fleet, which is 28 longliner vessels. The next parameter controls the mean number of fishing events per boat day. In this case study vessel is the primary sampling unit, and we assume that one day at sea equals one haul (i.e., mean fishing event per boat day is one). The data represent one metier (L4, LLF_DES_0_0_0), so the probability of recording at one metier is set to one. 
 
-The next couple of parameters concerns the probability of a bycatch event: The mean number of birds taken given an event, as well as the potential of more extreme events (probability of a large bycatch event as well as the mean number of individuals taken in those events). In the case study there are signs of the bycatch following a bimodial distribution, in the sense that we have some events with a much higher number (N~max~=36) than the estimated mean bycatch. Ta rough estimate of the probability of a bycatch event (bycatch events/fishing operations) is XX, and mean number of fullmars taken as bycatch in a bycatch event is XX. The probability of a large event  Within the function  Parameters are modeled as gamma/hurdle models, with out considering the nested structure of vessel. 
+The next couple of parameters concerns the probability of a bycatch event: The mean number of birds taken given an event, as well as the potential of more extreme events (probability of a large bycatch event as well as the mean number of individuals taken in those events). In the data there are signs of bycatch following a bimodial distribution, in the sense that we have some rare events with a much higher number (N~max~=36) than the estimated mean bycatch (~2). The probability of a large event, as well as the number of birds captured in these events are however rather uncertain as they are indeed rare events in the data. So, these parameters could be considered a mixture between data driven and more qualitatively driven (based on informal communication with fishers). In the data, there are unexplained variation between vessels in reported bycatch numbers, i.e. a vessel effect of bycatch which might be attributed to a number of different variables in reality (training, mitigation measures, spatio-temporal variation in fishing etc). 
 ```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
 
 # Simulate the true state of the fishery
@@ -607,4 +607,3 @@ stochastic = TRUE)
   flush.console()
 } #y
 ```
-
