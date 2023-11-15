@@ -1,15 +1,15 @@
 
 make_fishing_year_metier<-function(mean.bycatch.event=1,mean.bycatch.large.event=20,p.large.event=0.01,
-							nboat=100,mean.fishing.event.boat.day=2,p.bycatch=c(0.1,.01),p.metier=c(.2,.8),stochastic=TRUE) {
+							nboat=100,mean.fishing.event.boat.day=2,p.bycatch=c(0.1,.01),p.metier=c(.2,.8),stochastic=TRUE,vessel.effect=0) {
 
-#p.metier is the proportion of vessel in the, here, length of p.bycatch metiers 
+#p.metier is the proportion of vessel in the, here, length of p.bycatch metiers
 # p bycatch event alternative distribution particularly for low density species
 require(extraDistr)
 
 nmetier<-length(p.bycatch)
 
 fishing.day<-1:365
-fleet<-1:nboat							
+fleet<-1:nboat
 metier<-sample(1:nmetier,nboat,replace=TRUE,prob=p.metier) #here we deal with probability of metier, not proportion of metier hence sampling with replacement
 
 if (stochastic==TRUE) {
@@ -45,8 +45,13 @@ temp$nbycatch[temp$bycatch==1]<-apply(cbind((1-event.type)*rtpois(sum(temp$bycat
 fishing<-rbind(fishing,temp)
 
 }
+# Add vessel effects
+tbl <- table(fishing$boat)
+nbycatch.vessel.adj <- rnorm(n = length(tbl), mean = 0, sd = vessel.effect)
+nbycatch.vessel.adj <- nbycatch.vessel.adj[match(fishing$boat, names(tbl))]
+fishing$nbycatch <- round(exp(log(fishing$nbycatch) + nbycatch.vessel.adj))
+
 #########
 ## so for this challenge we need to change the computation of the estimated total bycatch it becomes the estimated BPUE x estimated effort
 return(fishing)
 }
-
