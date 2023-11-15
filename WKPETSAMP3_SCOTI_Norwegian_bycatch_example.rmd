@@ -23,9 +23,9 @@ source("https://raw.githubusercontent.com/dlusseau/scoti/main/monitor_BPUE_metie
 ```
 
 
-First, we use a function to parameterize the fishery. The first parameter (nboat) is the size of the active fishing fleet, which in this case study is 28 longliner vessels. The next parameter controls the mean number of fishing events per boat day. In this case study vessel is the primary sampling unit, and we assume that one day at sea equals one haul (i.e., mean fishing event per boat day is one). The data represent one metier (L4, LLF_DES_0_0_0), so the probability of recording at one metier is set to one. 
+Secondly, we use the make\_fishing\_year\_metier function to simulate the fishery in the case study. The first parameter (nboat) is the size of the active fishing fleet, which is 28 longliner vessels. The next parameter controls the mean number of fishing events per boat day. In this case study vessel is the primary sampling unit, and we assume that one day at sea equals one haul (i.e., mean fishing event per boat day is one). The data represent one metier (L4, LLF_DES_0_0_0), so the probability of recording at one metier is set to one. 
 
-The next couple of parameters concerns the probability of a bycatch event: The mean number of birds taken given an event, as well as the potential of more extreme events (probability of a large bycatch event as well as the mean number of individuals taken in those events). In the case study , a rough estimate of the probability of a bycatch event (bycatch events/fishing operations) is XX, and mean number of fullmars taken as bycatch in a bycatch event is XX. The probability of a large Within the function  Parameters are modeled as gamma/hurdle models, with out considering the nested structure of vessel. 
+The next couple of parameters concerns the probability of a bycatch event: The mean number of birds taken given an event, as well as the potential of more extreme events (probability of a large bycatch event as well as the mean number of individuals taken in those events). In the case study there are signs of the bycatch following a bimodial distribution, in the sense that we have some events with a much higher number (N~max~=36) than the estimated mean bycatch. Ta rough estimate of the probability of a bycatch event (bycatch events/fishing operations) is XX, and mean number of fullmars taken as bycatch in a bycatch event is XX. The probability of a large event  Within the function  Parameters are modeled as gamma/hurdle models, with out considering the nested structure of vessel. 
 ```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
 
 # Simulate the true state of the fishery
@@ -45,10 +45,21 @@ Secondly we define the monitoring
 We don't have any actual data to calculate detection probability of individual birds in the catch, but we use a fixed probability [0.7](https://doi.org/10.1371/journal.pone.0220797) found for similar fisheries in the literature. We thus assume that some  we dont have any information that this is likely to vary in time or space. Rejection of participating    
 
 ```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
+# Simulate monitoring
+pmonitor <- 1
+nsample <- 100 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
+p_monitor_boat <- 3/31 #  n boats that were willing to report seabirds
+boat_samp <- TRUE
+p_haul_obs <- 1 # should be fixed at 1 per David
+detect_prob <- 0.7
+refusal_rate <- 0 # ignoring refusal for now
+misclassification <- 0
+bymetier <- FALSE
+p_monitor_metier <- 1
 
 ```
 
-We have a fishing year that make sense for the fishery, trying to run a full simulation
+We have a fishing year that make sense for the fishery, trying to run a full simulation...The following code is grabbed directly from the repository as is
 
 ```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
 
@@ -596,3 +607,4 @@ stochastic = TRUE)
   flush.console()
 } #y
 ```
+
