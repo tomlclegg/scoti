@@ -11,7 +11,7 @@ knitr::opts_chunk$set(tidy=TRUE, dpi=150)
 
 ## Parametrization for a seabird example
 
-The current example is based on data from the Reference fleet in Norway (IMR). More information on The Norwegian Reference fleet can be found [here](https://www.hi.no/en/hi/cruises-and-field-work/the-reference-fleet). In this particular case we consider bycatch of Northern fulmars in a sample of the high sea long line fishery where we have high confidence in that the reported numbers are close to actual numbers of bycatch. 
+The current example is based on data from the Reference fleet in Norway (IMR). More information on The Norwegian Reference fleet can be found [here](https://hdl.handle.net/11250/2685855). In this particular case we consider bycatch of Northern fulmars in a sample of the high sea long line fishery where we have high confidence in that the reported numbers are close to actual numbers of bycatch. 
 
 It is still worth keeping in mind, however, that the observed probabilities of bycatch events and number of individuals bycaught per event could be biased values (e.g., already including an observation error that might might shape those parameters).
 
