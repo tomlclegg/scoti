@@ -21,7 +21,7 @@ stochastic <- FALSE
 
 # Simulate monitoring
 pmonitor <- 1
-nsample <- 100 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
+nsample <- 1000 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
 p_monitor_boat <- 3/31 #  n boats that were willing to report seabirds
 boat_samp <- TRUE
 p_haul_obs <- 1 # should be fixed at 1 per David
@@ -100,3 +100,88 @@ fishing_spatial |>
   dplyr::mutate(day_type = case_when(fishing.day >=32 & fishing.day <=60 ~ "special",TRUE ~ "regular")) |>
   dplyr::group_by(area,day_type) |>
   dplyr::summarize(mean(bycatch))
+
+
+# Figures for case study example ------------------------------------------
+# Scenario 1: different vessel effects.  
+
+vessel.effect.vec <- c(0.01, 0.3, 0.7, 0.9)
+p_monitor_boat.vec <- (2:31)/31
+bigdf <- vector()
+
+for (p in 1:length(p_monitor_boat.vec)) {
+  BPUE_real_vec <-BPUE_CV_vec <- BPUE_est_vec <- BPUE_bias_vec <- vector()
+  for (i in 1:length(vessel.effect.vec)) {
+    fishing <- make_fishing_year_metier(
+      mean.bycatch.event = mean.bycatch.event,
+      mean.bycatch.large.event = mean.bycatch.large.event,
+      p.large.event = p.large.event, nboat = nboat,
+      mean.fishing.event.boat.day = mean.fishing.event.boat.day,
+      p.bycatch = p.bycatch, p.metier = p.metier,
+      stochastic = stochastic,
+      vessel.effect = vessel.effect.vec[i]
+    )
+    BPUE_real_vec[i] <- sum(fishing$nbycatch) / dim(fishing)[1]
+
+    obs_fishing <- monitor_BPUE_metier(
+      pmonitor = pmonitor,
+      nsample = nsample,
+      BPUE_real = BPUE_real,
+      fishing = fishing,
+      p_monitor_boat = p_monitor_boat.vec[p],
+      boat_samp = boat_samp,
+      p_haul_obs = p_haul_obs,
+      detect_prob = detect_prob,
+      refusal_rate = refusal_rate,
+      misclassification = misclassification,
+      bymetier = bymetier,
+      p_monitor_metier = p_monitor_metier
+    )
+
+    BPUE_bias_vec[i] <- (obs_fishing$BPUE_est - BPUE_real_vec[i]) / BPUE_real_vec[i]
+    BPUE_est_vec[i] <- obs_fishing$BPUE_est
+    BPUE_CV_vec[i] <- obs_fishing$CV
+   
+  } #/end vessel effect loop 
+  df <- data.frame(p_monitor_boat.vec[p], 
+                   vessel.effect.vec, 
+                   BPUE_real_vec,
+                   BPUE_est_vec,
+                   BPUE_CV_vec, 
+                   BPUE_bias_vec)
+  bigdf <- rbind(bigdf,df)
+}
+
+
+library(ggplot2)
+
+p1 <- bigdf %>%
+  mutate(vessel.effect.vec = as.factor(vessel.effect.vec)) %>%
+  ggplot(aes(x=p_monitor_boat.vec.p.,y=BPUE_CV_vec  ,
+             color = vessel.effect.vec, group = vessel.effect.vec)) +
+  geom_line(lwd=1.2) +
+  xlab("Proportion of vessels monitored") +
+  ylab("CV of BPUE estimate") +
+  scale_color_brewer("Vessel effect", type = 'seq', palette = 3) +
+  theme_classic(base_size = 16)
+
+save(bigdf, file = 'output/vessel_effect_cv_vs_BPUE.rds')
+load('output/vessel_effect_cv_vs_BPUE.rds')
+
+png("output/vessel_effect_cv_vs_BPUE.png", width = 8, height = 6, units = 'in', res = 200)
+p1
+dev.off()
+
+# Scenario 2: expanding beyond ref fleet  ---------------------------------
+# Simulate monitoring
+pmonitor <- 1 # this applies at the year scale, so could be proportion of days that an observer would be onboard? 
+nsample <- 100 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
+p_monitor_boat <- 3/31 # want to cover from 2 to 31 boats
+boat_samp <- TRUE
+p_haul_obs <- 1 # should be fixed at 1 per David
+detect_prob <- 0.5 # still monitoring all the hauls, but not observing every hook on the longline
+refusal_rate <- 0 # ignoring refusal for now
+misclassification <- 0
+bymetier <- FALSE
+p_monitor_metier <- 1
+
