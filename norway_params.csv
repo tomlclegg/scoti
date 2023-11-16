@@ -1,4 +1,4 @@
-Scenario,Simulation component,Parameter,Value,Description,
+Scenario,Simulation component,Parameter,Value,Description,Comment
 default,fishing,nboat,28,Size of the active fishing fleet,
 default,fishing,mean.fishing.event.boat.day,1,Mean number of fishing events per boat day,
 default,fishing,stochastic,FALSE,"Logical; should a vessel-specific mean number of events per vessel be used, or a single value for the entire fleet?",
