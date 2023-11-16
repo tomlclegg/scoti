@@ -95,7 +95,7 @@ make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.
         temp <- rbind(bycatch_high, bycatch_low)
     } else {
       temp <- temp
-
+}
 
 
     event.type <- rbinom(sum(temp$bycatch), 1, p.large.event)
