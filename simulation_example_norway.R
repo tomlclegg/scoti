@@ -21,7 +21,7 @@ stochastic <- FALSE
 
 # Simulate monitoring
 pmonitor <- 1
-nsample <- 1000 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
+nsample <- 100 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
 p_monitor_boat <- 3/31 #  n boats that were willing to report seabirds
 boat_samp <- TRUE
 p_haul_obs <- 1 # should be fixed at 1 per David
@@ -38,7 +38,7 @@ fishing <- make_fishing_year_metier(mean.bycatch.event = mean.bycatch.event,
                                     p.large.event = p.large.event,nboat = nboat,
                                     mean.fishing.event.boat.day = mean.fishing.event.boat.day,
                                     p.bycatch = p.bycatch, p.metier = p.metier,
-                                    stochastic = stochastic
+                                    stochastic = stochastic, vessel.effect = 0
                                     )
 head(fishing) # columns of output: bycatch is whether there was an event that day, nbycatch = number of individuals
 
@@ -105,7 +105,7 @@ fishing_spatial |>
 # Figures for case study example ------------------------------------------
 # Scenario 1: different vessel effects.  
 
-vessel.effect.vec <- c(0.01, 0.3, 0.7, 0.9)
+vessel.effect.vec <- c(0, 0.3, 0.7, 0.9)
 p_monitor_boat.vec <- (2:31)/31
 bigdf <- vector()
 
@@ -174,14 +174,14 @@ dev.off()
 
 # Scenario 2: expanding beyond ref fleet  ---------------------------------
 # Simulate monitoring
-pmonitor <- 1 # this applies at the year scale, so could be proportion of days that an observer would be onboard? 
-nsample <- 100 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
-p_monitor_boat <- 3/31 # want to cover from 2 to 31 boats
-boat_samp <- TRUE
-p_haul_obs <- 1 # should be fixed at 1 per David
-detect_prob <- 0.5 # still monitoring all the hauls, but not observing every hook on the longline
-refusal_rate <- 0 # ignoring refusal for now
-misclassification <- 0
-bymetier <- FALSE
-p_monitor_metier <- 1
-
+# pmonitor <- 1 # this applies at the year scale, so could be proportion of days that an observer would be onboard? 
+# nsample <- 100 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
+# p_monitor_boat <- 3/31 # want to cover from 2 to 31 boats
+# boat_samp <- TRUE
+# p_haul_obs <- 1 # should be fixed at 1 per David
+# detect_prob <- 0.5 # still monitoring all the hauls, but not observing every hook on the longline
+# refusal_rate <- 0 # ignoring refusal for now
+# misclassification <- 0
+# bymetier <- FALSE
+# p_monitor_metier <- 1
+# 
