@@ -12,6 +12,82 @@ library(ggplot2)
 library(wesanderson)
 ```
 
+# MAIN DOCUMENT
+
+## Parameterization for a reference fleet with seabird bycatch
+
+We parameterized `{scoti}` simulations based on data and expert opinion from the Reference fleet in Norway. The fishery has bycatch of Northern fulmars (*Fulmarus glacialis*), and 28 vessels have agreed to participate in a reference fleet. **The parameterization of these simulations is described in more detail in the Annex to this section.** Because this model is not a statistical model fitted to data from the fishery, we attempted to tune the simulation model to produce a similar BPUE and $CV_{BPUE}$ to existing values estimated from a linear model.
+
+Currently, the bycatch per unit effort (BPUE) for the reference fleet is estimated using a generalized additive mixed model (GLMM) with vessel as a fixed effect. `{scoti}` currently assumes that all vessels share a common mean probability of a bycatch event and a common mean number of individuals caught if and when a bycatch event occurs (i.e., the same probability distributions describe bycatch for every vessel in the fleet). In order for the CV of the BPUE estimate from simulations to more closely match the model-based estimate from the GLMM, we modified the fishery simulation step in the `{scoti}` functions to include an added vessel effect. The effect is additive on bycatch numbers for hauls with positive bycatch. 
+
+
+## Incorporating a vessel effect
+
+To account for non-independence of repeated sampling by vessels, we introduced additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
+
+```{r echo=FALSE}
+load('output/vessel_effect_cv_vs_BPUE.rds')
+
+p1 <- bigdf |>
+  mutate(vessel.effect.vec = as.factor(vessel.effect.vec)) |>
+  ggplot(aes(x=p_monitor_boat.vec.p.,y=BPUE_CV_vec  ,
+             color = vessel.effect.vec, group = vessel.effect.vec)) +
+  geom_line(lwd=1.2) +
+  xlab("Proportion of vessels monitored") +
+  ylab("CV of BPUE estimate") +
+  scale_color_manual("Vessel effect", values = wes_palette("Rushmore1", n = 5, type = 'discrete')[c(1,3,4,5)] ) +
+  theme_classic(base_size = 16)
+p1
+```
+
+## Comparison to a dedicated observer programme
+
+We simulated a hypothetical observer programme to evaluate the sampling effort needed to improve the performance of seabird bycatch estimation relative to current estimates that use Norwegian Reference Fleet data.
+
+An observer programme would sample more vessels but fewer fishing operations. However, a refusal rate would be larger yet unknown, so we explored a wide range of values. The detection probability would increase given that the observer would have a single task.
+
+```{r echo=FALSE,warning=FALSE}
+load('output/observer_prog_cv_vs_BPUE_5000.rds')
+
+p2 <- bigdf %>%
+  mutate(refusal_rate.vec = as.factor(refusal_rate.vec)) %>%
+  ggplot(aes(x=p_monitor_boat.vec.p.,y=BPUE_CV_vec  ,
+             color = refusal_rate.vec, group = refusal_rate.vec)) +
+  geom_line(lwd=1.2) +
+  xlab("Proportion of vessels monitored") +
+  ylab("CV of BPUE estimate") +
+  scale_color_manual("Refusal rate", values = wes_palette("FantasticFox1",n = 4, type = 'discrete')) +
+  theme_classic(base_size = 16)
+p2
+```
+
+## Spatial and temporal overlap extension
+
+We extended the original `{scoti}` framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hot spot(s) can also be switched on and of during a fishing year. The rationality for introducing hotspot areas for  bycatch is based on the spatiotemporal variation in species abundance across areas during a year. Furthermore, as fisheries also are likely to vary in intensity across areas during a year, the framework also have a possibility to vary the fishing effort the range of areas using different shape parameters of the [beta-distribution](https://en.wikipedia.org/wiki/Beta_distribution). 
+
+Specifically, bycatch hot spots can be parameterised as one or more areas (`hotspot.area`) of a total number of areas (`narea`), which then will act as a bycatch hot spot with increased probability of bycatch during the specified time period during a year (`time.periods.bycatch`). This option can be switched on or off with the parameter `spatio.temporal.bycatch.trend`. The trend in fishing effort is similarly switched on or off with the parameter `spatio.temporal.fishery.trend`. This allows for control over which areas the vessels in the fleet should target their fishing effort. To do this, two set of shape parameters controlling the shape of two different beta distributions should be defined. First, a general pattern of fishing activity across the total number of areas should be defined with the parameter `spatial.effort.skewness.general` (for example if the general pattern of the vessel is a uniform distribution of vessels across areas we use α = β = 1). Then one could shift this distribution using other values of α and β in the parameter `spatial.effort.skewness.special`, if there are specific time periods during the year (defined in `time.periods.fishery`) where the fishery is more focused in some areas. 
+```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
+
+#Tuning of bycatch variability
+spatio.temporal.bycatch.trend <- TRUE #switch that turn on (TRUE) or off (FALSE) bycatch variability
+narea <- 10 # Defines the total number of areas in the focal fishery, integr
+hotspot.area = 10 #Defines a one or more areas between 1 and narea to  
+time.periods.bycatch <- 32:60 #Time periods of the year, in days, hotspot should be active. Can be multiple time periods 
+
+#Tuning of fishery 
+
+spatio.temporal.fishery.trend <- TRUE # this turns on or off the other spatial/temporal 
+spatial.effort.skewness.general <- c(1,1)
+spatial.effort.skewness.special <- c(1.7,0.3)
+time.periods.fishery <- 32:60
+ 
+
+```
+
+
+
+# ANNEX
+
 ## Parametrization for a seabird example
 
 The current example is based on data from the Reference fleet in Norway (IMR). More information on The Norwegian Reference Fleet can be found [here](https://hdl.handle.net/11250/2685855). In this particular case we consider bycatch of Northern fulmars (*Fulmarus glacialis*) in a sample of the offshore longline fishery where we have high confidence in that the reported numbers are close to actual numbers of bycatch.
@@ -83,64 +159,8 @@ p_monitor_metier <- 1
 
 ## Incorporating a vessel effect
 
-To account for non-independence of repeated sampling by vessels, we introduced additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
+To account for non-independence of repeated sampling by vessels, we modified the fishery simulation step in the `{scoti}` functions to include an added vessel effect. This was done by introducing additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
 
-```{r echo=FALSE}
-load('output/vessel_effect_cv_vs_BPUE.rds')
+Including a vessel effect in the simulation model shifted the CV of the BPUE estimate from simulations to more closely match the model-based estimate from the GLMM.  The effect is additive on bycatch numbers for hauls with positive bycatch. 
 
-p1 <- bigdf |>
-  mutate(vessel.effect.vec = as.factor(vessel.effect.vec)) |>
-  ggplot(aes(x=p_monitor_boat.vec.p.,y=BPUE_CV_vec  ,
-             color = vessel.effect.vec, group = vessel.effect.vec)) +
-  geom_line(lwd=1.2) +
-  xlab("Proportion of vessels monitored") +
-  ylab("CV of BPUE estimate") +
-  scale_color_manual("Vessel effect", values = wes_palette("Rushmore1", n = 5, type = 'discrete')[c(1,3,4,5)] ) +
-  theme_classic(base_size = 16)
-p1
-```
-
-# Spatial and temporal overlap extension
-
-We extended the original `{scoti}` framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hot spot(s) can also be switched on and of during a fishing year. The rationality for introducing hotspot areas for  bycatch is based on the spatiotemporal variation in species abundance across areas during a year. Furthermore, as fisheries also are likely to vary in intensity across areas during a year, the framework also have a possibility to vary the fishing effort the range of areas using different shape parameters of the [beta-distribution](https://en.wikipedia.org/wiki/Beta_distribution). 
-
-Specifically, bycatch hot spots can be parameterised as one or more areas (`hotspot.area`) of a total number of areas (`narea`), which then will act as a bycatch hot spot with increased probability of bycatch during the specified time period during a year (`time.periods.bycatch`). This option can be switched on or off with the parameter `spatio.temporal.bycatch.trend`. The trend in fishing effort is similarly switched on or off with the parameter `spatio.temporal.fishery.trend`. This allows for control over which areas the vessels in the fleet should target their fishing effort. To do this, two set of shape parameters controlling the shape of two different beta distributions should be defined. First, a general pattern of fishing activity across the total number of areas should be defined with the parameter `spatial.effort.skewness.general` (for example if the general pattern of the vessel is a uniform distribution of vessels across areas we use α = β = 1). Then one could shift this distribution using other values of α and β in the parameter `spatial.effort.skewness.special`, if there are specific time periods during the year (defined in `time.periods.fishery`) where the fishery is more focused in some areas. 
-```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
-
-#Tuning of bycatch variability
-spatio.temporal.bycatch.trend <- TRUE #switch that turn on (TRUE) or off (FALSE) bycatch variability
-narea <- 10 # Defines the total number of areas in the focal fishery, integr
-hotspot.area = 10 #Defines a one or more areas between 1 and narea to  
-time.periods.bycatch <- 32:60 #Time periods of the year, in days, hotspot should be active. Can be multiple time periods 
-
-#Tuning of fishery 
-
-spatio.temporal.fishery.trend <- TRUE # this turns on or off the other spatial/temporal 
-spatial.effort.skewness.general <- c(1,1)
-spatial.effort.skewness.special <- c(1.7,0.3)
-time.periods.fishery <- 32:60
- 
-
-```
-
-# Comparison to a dedicated observer programme
-
-We simulated a hypothetical observer programme to evaluate the sampling effort needed to improve the performance of seabird bycatch estimation relative to current estimates that use Norwegian Reference Fleet data.
-
-An observer programme would sample more vessels but fewer fishing operations. However, a refusal rate would be larger yet unknown, so we explored a wide range of values. The detection probability would increase given that the observer would have a single task.
-
-```{r echo=FALSE,warning=FALSE}
-load('output/observer_prog_cv_vs_BPUE_5000.rds')
-
-p2 <- bigdf %>%
-  mutate(refusal_rate.vec = as.factor(refusal_rate.vec)) %>%
-  ggplot(aes(x=p_monitor_boat.vec.p.,y=BPUE_CV_vec  ,
-             color = refusal_rate.vec, group = refusal_rate.vec)) +
-  geom_line(lwd=1.2) +
-  xlab("Proportion of vessels monitored") +
-  ylab("CV of BPUE estimate") +
-  scale_color_manual("Refusal rate", values = wes_palette("FantasticFox1",n = 4, type = 'discrete')) +
-  theme_classic(base_size = 16)
-p2
-```
 
