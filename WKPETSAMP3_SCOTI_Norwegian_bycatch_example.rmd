@@ -21,7 +21,7 @@ It is worth keeping in mind that the observed probabilities of bycatch events an
 ```{r echo=FALSE,tab.cap='Parameter values used in simulations.', tab.id='params',  tab.cap.style = "Table Caption"}
 params <- read.csv("norway_params.csv", header = TRUE)
 colnames(params)[2] <- "Simulation component"
-
+#colnames(params)[4:5] <- c("Base case", "Expansion outside reference fleet")
 params |> 
   flextable::flextable() |> 
   flextable::set_table_properties(layout = "autofit") |>
