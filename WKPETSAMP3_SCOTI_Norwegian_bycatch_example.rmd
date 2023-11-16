@@ -1,6 +1,6 @@
 ---
-title: 'SCOTI simulation-seabird Norwegian example'
-author: "Based on SCOTI scripts (multiple authors)"
+title: 'SCOTI simulation: Norwegian seabird example'
+author: "Kim Mangus Baerum, Tom Clegg, Margaret Siple"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: html_document
 ---
