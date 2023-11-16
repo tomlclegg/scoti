@@ -1,7 +1,7 @@
 ---
 title: 'SCOTI simulation-seabird Norwegian example'
 author: "Based on SCOTI scripts (multiple authors)"
-date: "14/11/23"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: html_document
 ---
 
