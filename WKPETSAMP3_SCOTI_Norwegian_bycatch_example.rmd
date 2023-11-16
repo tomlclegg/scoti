@@ -100,9 +100,14 @@ p1 <- bigdf |>
 p1
 ```
 
-# Spatial overlap extension
+# Spatial and temporal overlap extension
 
-We extended the original `{scoti}` framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring.
+We extended the original `{scoti}` framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hot spot(s) can also be switched on and of during a fishing year. The rationality for introducing hotspots areas for  bycatch is based for specific  . Furthermore, as fisheries also are likely to vary in intensity 
+```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
+
+
+
+```
 
 # Comparison to a dedicated observer programme
 
