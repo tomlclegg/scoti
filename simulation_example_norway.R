@@ -104,7 +104,7 @@ fishing_spatial |>
 
 # Figures for case study example ------------------------------------------
 # Scenario 1: Vessel effects ----------------------------------------------
-
+nsample <- 5000
 vessel.effect.vec <- c(0, 0.3, 0.7, 0.9)
 p_monitor_boat.vec <- (2:31)/31
 bigdf <- vector()
@@ -154,7 +154,7 @@ for (p in 1:length(p_monitor_boat.vec)) {
   cat(round(p/length(p_monitor_boat.vec) * 100), "% done \n")
 }
 
-save(bigdf, file = 'output/vessel_effect_cv_vs_BPUE.rds')
+save(bigdf, file = paste0('output/vessel_effect_cv_vs_BPUE_',nsample,'.rds'))
 load('output/vessel_effect_cv_vs_BPUE.rds')
 
 library(ggplot2)
@@ -250,6 +250,10 @@ p2 <- bigdf %>%
   scale_color_manual("Refusal rate", values = wes_palette("FantasticFox1",n = 4, type = 'discrete')) +
   theme_classic(base_size = 16)
 p2
+
+png("output/refusal_obsprogramme_cv_vs_BPUE.png", width = 8, height = 6, units = 'in', res = 200)
+p2
+dev.off()
 
 # Plot comparing reference fleet to observer program.
 load('output/vessel_effect_cv_vs_BPUE.rds')
