@@ -1,0 +1,19 @@
+Simulation component,Parameter,Value,Description
+fishing,nboat,28,Size of the active fishing fleet
+fishing,mean.fishing.event.boat.day,1,Mean number of fishing events per boat day
+fishing,stochastic,FALSE,"Logical; should a vessel-specific mean number of events per vessel be used, or a single value for the entire fleet?"
+fishing,p.metier,1,Probability (proportion) of vessels belonging each metier
+bycatch process,p.bycatch,0.12,Probability of bycatch event by haul and metier
+bycatch process,p.large.event,0.007,"Given that a bycatch event occurs, the probability of a large bycatch event"
+bycatch process,mean.bycatch.event,2,"Given that a bycatch event occurs and that event is not large, the mean number of individuals caught at a 'normal' bycatch event"
+bycatch process,mean.bycatch.large.event,17.6,"Given that a bycatch event occurs and that event is large, the mean number of individuals"
+simulation parameter,nsample,1000,Number of samples to be taken from the fishing data
+observation,p_monitor_boat,0.096774194,Proportion of vessels monitored
+observation,pmonitor,1,Proportion of hauls monitored for each vessel
+observation,p_monitor_metier,1,Proportion of monitoring allocated to (each?) metier
+observation,bymetier,FALSE,Logical; whether sampling is stratified by metier?
+observation,boat_samp,TRUE,"If FALSE: sampling occurs at the fishing event level (haul); if TRUE: first sample vessels to be monitored, then sample hauls"
+observation,refusal_rate,0,Probability that a sampled vessel is rejected due to refusal to allow observer onboard
+properties of an average monitoring event,p_haul_obs,1,Probability that a haul is observed 
+properties of an average monitoring event,detect_prob,0.7,Probability of detection of each individual in a bycatch event
+properties of an average monitoring event,misclassification,0,Probability of mis-identification of the bycaught species
