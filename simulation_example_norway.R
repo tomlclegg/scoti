@@ -152,8 +152,11 @@ for (p in 1:length(p_monitor_boat.vec)) {
   bigdf <- rbind(bigdf,df)
 }
 
+#save(bigdf, file = 'output/vessel_effect_cv_vs_BPUE.rds')
+load('output/vessel_effect_cv_vs_BPUE.rds')
 
 library(ggplot2)
+library(wesanderson)
 
 p1 <- bigdf %>%
   mutate(vessel.effect.vec = as.factor(vessel.effect.vec)) %>%
@@ -162,11 +165,9 @@ p1 <- bigdf %>%
   geom_line(lwd=1.2) +
   xlab("Proportion of vessels monitored") +
   ylab("CV of BPUE estimate") +
-  scale_color_brewer("Vessel effect", type = 'seq', palette = 3) +
+  scale_color_manual("Vessel effect", values = wes_palette("Rushmore1",n = 5, type = 'discrete')[c(1,3,4,5)] ) +
   theme_classic(base_size = 16)
 
-save(bigdf, file = 'output/vessel_effect_cv_vs_BPUE.rds')
-load('output/vessel_effect_cv_vs_BPUE.rds')
 
 png("output/vessel_effect_cv_vs_BPUE.png", width = 8, height = 6, units = 'in', res = 200)
 p1

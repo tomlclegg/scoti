@@ -29,7 +29,6 @@ params |>
 
 This code uses all simulation functions from the original `{scoti}` scripts, except for the `make_fishing_metier()` function, which has been modified to include a "vessel effect" (see below).
 
-
 ```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
 
 source("https://raw.githubusercontent.com/dlusseau/scoti/main/estimate_fishing_effort_metier.R")
@@ -38,16 +37,13 @@ source("https://raw.githubusercontent.com/dlusseau/scoti/main/make_fishing_year_
 source("https://raw.githubusercontent.com/dlusseau/scoti/main/monitor_BPUE_metier.R")
 ```
 
-
 ## Simulating fishery data
 
-We use the `make_fishing_year_metier()` function to simulate the fishery in the case study. 
+We use the `make_fishing_year_metier()` function to simulate the fishery in the case study.
 
 The next parameter controls the mean number of fishing events per boat day. In this case study vessel is the primary sampling unit, and we assume that one day at sea equals one haul (i.e., mean fishing event per boat day is one). The data represent one metier (L4, LLF_DES_0_0_0), so the probability of recording at one metier is set to one.
 
 The next couple of parameters concerns the probability of a bycatch event: The mean number of birds taken given an event, as well as the potential of more extreme events (probability of a large bycatch event as well as the mean number of individuals taken in those events). In the data there are signs of bycatch following a bimodial distribution, in the sense that we have some rare events with a much higher number (N~max~=36) than the estimated mean bycatch (\~2). The probability of a large event, as well as the number of birds captured in these events are however rather uncertain as they are indeed rare events in the data. So, these parameters could be considered a mixture between data driven and more qualitatively driven (based on informal communication with fishers). In the data, there are unexplained variation between vessels in reported bycatch numbers, i.e. a vessel effect of bycatch which might be attributed to a number of different variables in reality (training, mitigation measures, spatio-temporal variation in fishing etc).
-
-To account for non-independence of repeated sampling by vessels, we introduced additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
 
 ```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
 
@@ -80,11 +76,30 @@ refusal_rate <- 0 # ignoring refusal for now
 misclassification <- 0
 bymetier <- FALSE
 p_monitor_metier <- 1
-
-
-
 ```
 
-## Spatial overlap extension
+## Incorporating a vessel effect
 
-We extended the original `{scoti}` framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring. 
+To account for non-independence of repeated sampling by vessels, we introduced additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
+
+```{r echo=FALSE}
+load('output/vessel_effect_cv_vs_BPUE.rds')
+
+library(ggplot2)
+library(wesanderson)
+
+p1 <- bigdf |>
+  mutate(vessel.effect.vec = as.factor(vessel.effect.vec)) |>
+  ggplot(aes(x=p_monitor_boat.vec.p.,y=BPUE_CV_vec  ,
+             color = vessel.effect.vec, group = vessel.effect.vec)) +
+  geom_line(lwd=1.2) +
+  xlab("Proportion of vessels monitored") +
+  ylab("CV of BPUE estimate") +
+  scale_color_manual("Vessel effect", values = wes_palette("Rushmore1",n = 5, type = 'discrete')[c(1,3,4,5)] ) +
+  theme_classic(base_size = 16)
+p1
+```
+
+# Spatial overlap extension
+
+We extended the original `{scoti}` framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring.
