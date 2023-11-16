@@ -60,8 +60,8 @@ p.large.event <- 0.007
 mean.bycatch.event <- 2 # (rounded down from 2.4)
 mean.bycatch.large.event <- 36 # max in dataset is 36 
 stochastic <- FALSE
-BPUE_real = sum(fishing$nbycatch) / dim(fishing)[1]
-
+BPUE_real <- sum(fishing$nbycatch) / dim(fishing)[1]
+vessel.effect <- 0.7
 ```
 
 ## Simulating monitoring
