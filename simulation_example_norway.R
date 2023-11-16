@@ -73,12 +73,12 @@ print(obs_fishing)
 source("make_fishing_year_metier_space.R")
 # Added params for when you're using the spatial version of the fn
 narea <- 10
-spatio.temporal.fishery.trend <- TRUE # this turns on or off the other spatial/temporal 
+spatio.temporal.fishery.trend <- TRUE # this turns on or off the other spatial/temporal
 spatio.temporal.bycatch.trend <- TRUE
 spatial.effort.skewness.general <- c(1,1)
 spatial.effort.skewness.special <- c(1.7,0.3)
 time.periods.fishery <- 32:60
-time.periods.bycatch <- 32:60 
+time.periods.bycatch <- 32:60
 
 fishing_spatial <- make_fishing_year_metier_space(mean.bycatch.event = mean.bycatch.event,
                                mean.bycatch.large.event = mean.bycatch.large.event,
@@ -93,7 +93,7 @@ fishing_spatial <- make_fishing_year_metier_space(mean.bycatch.event = mean.byca
                                spatio.temporal.bycatch.trend = spatio.temporal.bycatch.trend,
                                spatial.effort.skewness.general =spatial.effort.skewness.general,
                                spatial.effort.skewness.special = spatial.effort.skewness.special,
-                               time.periods.fishery = time.periods.fishery, 
+                               time.periods.fishery = time.periods.fishery,
                                time.periods.bycatch = time.periods.bycatch,
                                hotspot.area = 10)
 fishing_spatial |>
@@ -103,7 +103,7 @@ fishing_spatial |>
 
 
 # Figures for case study example ------------------------------------------
-# Scenario 1: Vessel effects ----------------------------------------------  
+# Scenario 1: Vessel effects ----------------------------------------------
 
 vessel.effect.vec <- c(0, 0.3, 0.7, 0.9)
 p_monitor_boat.vec <- (2:31)/31
@@ -112,6 +112,7 @@ bigdf <- vector()
 for (p in 1:length(p_monitor_boat.vec)) {
   BPUE_real_vec <-BPUE_CV_vec <- BPUE_est_vec <- BPUE_bias_vec <- vector()
   for (i in 1:length(vessel.effect.vec)) {
+    set.seed(123)
     fishing <- make_fishing_year_metier(
       mean.bycatch.event = mean.bycatch.event,
       mean.bycatch.large.event = mean.bycatch.large.event,
@@ -141,18 +142,19 @@ for (p in 1:length(p_monitor_boat.vec)) {
     BPUE_bias_vec[i] <- (obs_fishing$BPUE_est - BPUE_real_vec[i]) / BPUE_real_vec[i]
     BPUE_est_vec[i] <- obs_fishing$BPUE_est
     BPUE_CV_vec[i] <- obs_fishing$CV
-   
-  } #/end vessel effect loop 
-  df <- data.frame(p_monitor_boat.vec[p], 
-                   vessel.effect.vec, 
+
+  } #/end vessel effect loop
+  df <- data.frame(p_monitor_boat.vec[p],
+                   vessel.effect.vec,
                    BPUE_real_vec,
                    BPUE_est_vec,
-                   BPUE_CV_vec, 
+                   BPUE_CV_vec,
                    BPUE_bias_vec)
   bigdf <- rbind(bigdf,df)
+  cat(round(p/length(p_monitor_boat.vec) * 100), "% done \n")
 }
 
-#save(bigdf, file = 'output/vessel_effect_cv_vs_BPUE.rds')
+save(bigdf, file = 'output/vessel_effect_cv_vs_BPUE.rds')
 load('output/vessel_effect_cv_vs_BPUE.rds')
 
 library(ggplot2)
@@ -193,6 +195,7 @@ bigdf <- vector()
 for (p in 1:length(p_monitor_boat.vec)) {
   BPUE_real_vec <-BPUE_CV_vec <- BPUE_est_vec <- BPUE_bias_vec <- vector()
   for (i in 1:length(refusal_rate.vec)) {
+    set.seed(123)
     fishing <- make_fishing_year_metier(
       mean.bycatch.event = mean.bycatch.event,
       mean.bycatch.large.event = mean.bycatch.large.event,
@@ -203,7 +206,7 @@ for (p in 1:length(p_monitor_boat.vec)) {
       vessel.effect = vessel.effect
     )
     BPUE_real_vec[i] <- sum(fishing$nbycatch) / dim(fishing)[1]
-    
+
     obs_fishing <- monitor_BPUE_metier(
       pmonitor = pmonitor,
       nsample = nsample,
@@ -218,24 +221,24 @@ for (p in 1:length(p_monitor_boat.vec)) {
       bymetier = bymetier,
       p_monitor_metier = p_monitor_metier
     )
-    
+
     BPUE_bias_vec[i] <- (obs_fishing$BPUE_est - BPUE_real_vec[i]) / BPUE_real_vec[i]
     BPUE_est_vec[i] <- obs_fishing$BPUE_est
     BPUE_CV_vec[i] <- obs_fishing$CV
-    
-  } #/end vessel effect loop 
-  df <- data.frame(p_monitor_boat.vec[p], 
-                   refusal_rate.vec, 
+
+  } #/end vessel effect loop
+  df <- data.frame(p_monitor_boat.vec[p],
+                   refusal_rate.vec,
                    BPUE_real_vec,
                    BPUE_est_vec,
-                   BPUE_CV_vec, 
+                   BPUE_CV_vec,
                    BPUE_bias_vec)
   bigdf <- rbind(bigdf,df)
   cat(round(p/length(p_monitor_boat.vec) * 100), "% done \n")
 }
 
 save(bigdf, file = paste0('output/observer_prog_cv_vs_BPUE_',nsample,'.rds'))
-#load('output/observer_prog_cv_vs_BPUE.rds')
+#load('output/observer_prog_cv_vs_BPUE_5000.rds')
 
 p2 <- bigdf %>%
   mutate(refusal_rate.vec = as.factor(refusal_rate.vec)) %>%
@@ -248,6 +251,11 @@ p2 <- bigdf %>%
   theme_classic(base_size = 16)
 p2
 
+# Plot comparing reference fleet to observer program.
+load('output/vessel_effect_cv_vs_BPUE.rds')
+ref_fleet <- bigdf |>
+  filter(vessel.effect.vec==0.7) # filter to the estimated vessel effect
 
-# Look at reference fleet compared to obs program -------------------------
+load('output/observer_prog_cv_vs_BPUE.rds')
+obs_program <- bigdf
 
