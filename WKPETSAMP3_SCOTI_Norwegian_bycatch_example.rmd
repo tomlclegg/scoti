@@ -55,7 +55,7 @@ In this simulation framework, a dedicated observer programme implemented on the 
 
 Simulation outputs (with $N = 10,000$ simulations of the full process) have unstable behavior with increasing vessel coverage (Figure \@ref(fig:ref-obs)). We have confirmed that this is not due to additional variation introduced by the vessel effect, and suspect it is due to simulation model behavior that we haven't had time to inspect yet. 
 
-```{r echo=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program with different refusal rates (colored lines) compare to CV(BPUE) estimated for the reference fleet (horizontal dotted line). The target amount of coverage on the x axis is the target coverage; the realized coverage is the product of the target coverage and the refusal rate.', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
+```{r echo=FALSE,warning=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program with different refusal rates (colored lines) compare to CV(BPUE) estimated for the reference fleet (horizontal dotted line). The target amount of coverage on the x axis is the target coverage; the realized coverage is the product of the target coverage and the refusal rate.', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
 load("output/observer_prog_cv_vs_BPUE_10000.rds")
 obs_program <- bigdf
 nrow(obs_program) # this one is larger because it has different refusal rates
@@ -104,15 +104,17 @@ The current example is based on data from the Reference fleet in Norway (IMR). M
 
 It is worth keeping in mind that the observed probabilities of bycatch events and number of individuals bycaught per event could be biased values (e.g., already including an observation error that might might shape those parameters). Parameter values used in the 'base case' and their descriptions are in Table \@ref(tab:params).
 
+<!---BLOCK_LANDSCAPE_START--->
 ```{r echo=FALSE,tab.cap='Parameter values used in simulations.', tab.id='params',  tab.cap.style = "Table Caption"}
 params <- read.csv("norway_params.csv", header = TRUE)
-colnames(params)[2] <- "Simulation component"
-#colnames(params)[4:5] <- c("Base case", "Expansion outside reference fleet")
+colnames(params) <- c("Simulation component","Parameter name","Description","Value in base case","Value in dedicated observer program")
+
 params |> 
   flextable::flextable() |> 
   flextable::set_table_properties(layout = "autofit") |>
   flextable::theme_vanilla()
 ```
+<!---BLOCK_LANDSCAPE_STOP--->
 
 ## {scoti} functions used
 
