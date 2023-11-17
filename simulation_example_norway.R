@@ -244,39 +244,13 @@ for (p in 1:length(p_monitor_boat.vec)) {
   cat(round(p / length(p_monitor_boat.vec) * 100), "% done \n")
 }
 
-save(bigdf, file = paste0("output/observer_prog_cv_vs_BPUE_", nsample, ".rds"))
-# load('output/observer_prog_cv_vs_BPUE_5000.rds')
-
-p2 <- bigdf %>%
-  mutate(refusal_rate.vec = as.factor(refusal_rate.vec)) %>%
-  ggplot(aes(
-    x = p_monitor_boat.vec.p., y = BPUE_CV_vec,
-    color = refusal_rate.vec, group = refusal_rate.vec
-  )) +
-  geom_line(lwd = 1.2) +
-  xlab("Proportion of vessels monitored") +
-  ylab("CV of BPUE estimate") +
-  scale_color_manual("Refusal rate", values = wes_palette("FantasticFox1", n = 4, type = "discrete")) +
-  theme_classic(base_size = 16)
-p2
-
-png("output/refusal_obsprogramme_cv_vs_BPUE.png", width = 8, height = 6, units = "in", res = 200)
-p2
-dev.off()
-
-
-# # Plot comparing reference fleet to observer program.
-# load("output/vessel_effect_cv_vs_BPUE_5000.rds")
-# ref_fleet <- bigdf |>
-#   filter(vessel.effect.vec == 0.7) # filter to the estimated vessel effect
-# nrow(ref_fleet)
-
+# save(bigdf, file = paste0("output/observer_prog_cv_vs_BPUE_", nsample, ".rds"))
 
 load("output/observer_prog_cv_vs_BPUE_10000.rds")
 obs_program <- bigdf
 nrow(obs_program) # this one is larger because it has different refusal rates
 
-obs_program |>
+p2 <- obs_program |>
   mutate(refusal_rate.vec = as.factor(refusal_rate.vec)) |>
   ggplot(aes(
     x = p_monitor_boat.vec.p., y = BPUE_CV_vec,
@@ -286,11 +260,16 @@ obs_program |>
   geom_line(lwd = 1.2) +
   theme_classic(base_size = 16) +
   scale_color_manual("Refusal rate", values = wes_palette("FantasticFox1", n = 4, type = "discrete")) +
-  geom_hline(yintercept = 0.5367243,
-             lty = 2, lwd = 1,
-             color = "grey") + # This is the CV from the reference fleet we estimated above w vessel effect of 0.7
+  geom_hline(
+    yintercept = 0.5367243,
+    lty = 2, lwd = 1,
+    color = "grey"
+  ) + # This is the CV from the reference fleet we estimated above w vessel effect of 0.7
   xlab("Target proportion of vessels monitored") +
   ylab(expression(CV[BPUE]))
 
-
-head(df)
+png("output/refusal_obsprogramme_cv_vs_BPUE.png",
+  width = 8, height = 6, units = "in", res = 200
+)
+p2
+dev.off()
