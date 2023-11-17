@@ -49,13 +49,13 @@ We simulated a hypothetical observer programme to evaluate the sampling effort n
 
 An observer programme would sample more vessels but fewer fishing operations. However, a refusal rate would be larger yet unknown, so we explored a wide range of values. The detection probability would increase given that the observer would have a single task. From the base case, we increased the `p_haul_obs` parameter and reduced `pmonitor` (Table \@ref(tab:params)) to represent these characteristics of a hypothetical observer programme. 
 
-In this simulation framework, a dedicated observer programme implemented on the full fishery, where the refusal rate is around 60%, would need a target coverage of about 50% in the fishery to estimate a CV comparable to what one would get from estimating CV(BPUE) from a reference fleet (Figure \@ref(fig:ref-obs)).
+In this simulation framework, a dedicated observer programme implemented on the full fishery, where the refusal rate is around 60%, would need a target coverage of about 50% in the fishery to estimate a CV comparable to what one would get from estimating CV(BPUE) from a reference fleet (Figure \@ref(fig:ref-obs)). 
 
 ### Note about simulation behavior in the observer programme example
 
 Simulation outputs (with $N = 10,000$ simulations of the full process) have unstable behavior with increasing vessel coverage (Figure \@ref(fig:ref-obs)). We have confirmed that this is not due to additional variation introduced by the vessel effect, and suspect it is due to simulation model behavior that we haven't had time to inspect yet. 
 
-```{r echo=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program with different refusal rates (colored lines) compare to CV(BPUE) estimated for the reference fleet (horizontal dotted line).', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
+```{r echo=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program with different refusal rates (colored lines) compare to CV(BPUE) estimated for the reference fleet (horizontal dotted line). The target amount of coverage on the x axis is the target coverage; the realized coverage is the product of the target coverage and the refusal rate.', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
 load("output/observer_prog_cv_vs_BPUE_10000.rds")
 obs_program <- bigdf
 nrow(obs_program) # this one is larger because it has different refusal rates
@@ -82,7 +82,6 @@ p2
 ```
 
 
-
 ## Spatial and temporal overlap extension
 
 We extended the original `{scoti}` framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hot spot(s) can also be switched on and of during a fishing year. The rationality for introducing hotspot areas for  bycatch is based on the spatiotemporal variation in species abundance across areas during a year. Furthermore, as fisheries also are likely to vary in intensity across areas during a year, the framework also have a possibility to vary the fishing effort the range of areas using different shape parameters of the [beta-distribution](https://en.wikipedia.org/wiki/Beta_distribution). We modified the fishery-simulating function in `{scoti}` to include multiple areas, one of which can be identified as a hotspot (e.g., an area where seabirds might be actively feeding) and a temporal trend (e.g., an area with a breeding colony where there is a temporal effect on the probability of bycatch occurring). 
@@ -91,7 +90,10 @@ We extended the original `{scoti}` framework to represent a situation where ther
 **NEED TO ADD RESULT DESCRIPTION FOR SPATIAL/TEMPORAL THING**
 **NEED TO ADD RESULT FIG(S) FOR SPATIAL/TEMPORAL THING**
 
+## SUMMARY BULLETS
 
+- The precision of bycatch per unit effort estimates ($CV_{BPUE}$) is sensitive to vessel effects, whether these are due to spatial, temporal, or spatiotemporal variation in effort. Practices for reducing the size of the vessel effect may be more cost effective than increasing observer coverage for a given fishery.
+- In order for a fishery to achieve a similar degree of precision in an observer programme as in a reference fleet, it will require more coverage, especially in cases where refusal rates could be high. As always, a reference fleet should include the full range of vessel-specific variation that practitioners believe exists in the full fleet. If refusal rates in the full fishery are high enough, an observer program will not be as useful as a reference fleet in reducing precision.
 
 
 # ANNEX
