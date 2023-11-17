@@ -17,17 +17,17 @@ library(wesanderson)
 
 ## Parameterization for a reference fleet with seabird bycatch
 
-We parameterized SCOTI simulations based on data and expert opinion from the Reference fleet in Norway. The fishery has bycatch of Northern fulmars (*Fulmarus glacialis*), and three vessels have agreed to participate in a reference fleet. **The parameterization of these simulations is described in more detail in the Annex to this section.** Because this model is not a statistical model fitted to data from the fishery, we attempted to tune the simulation model to produce a similar BPUE and $CV_{BPUE}$ to existing values estimated from a linear model.
+We parameterized SCOTI simulations based on data and expert opinion from the Norwegian Reference Fleet sampling program. The fishery has bycatch of Northern fulmars (*Fulmarus glacialis*), and three Norwegian Reference Fleet vessels in the case study fishery report seabird bycatch observations. **The parameterization of these simulations is described in more detail in the Annex to this section.** Because this model is not a statistical model fitted to data from the fishery, we attempted to tune the simulation model to produce a similar BPUE and $CV_{BPUE}$ to existing values estimated from a linear model.
 
-Currently, the bycatch per unit effort (BPUE) for the reference fleet is estimated using a generalized additive mixed model (GLMM) with vessel as a fixed effect. SCOTI currently assumes that all vessels share a common mean probability of a bycatch event and a common mean number of individuals caught if and when a bycatch event occurs (i.e., the same probability distributions describe bycatch for every vessel in the fleet). In order for the CV of the BPUE estimate from simulations to more closely match the model-based estimate from the GLMM, we modified the fishery simulation step in the SCOTI functions to include an added vessel effect. The effect is additive on bycatch numbers for hauls with positive bycatch. 
+Currently, the bycatch per unit effort (BPUE) for the Norwegian Reference Fleet is estimated using a generalized linear mixed model (GLMM) with vessel as a random effect. SCOTI currently assumes that all vessels share a common mean probability of a bycatch event and a common mean number of individuals caught if and when a bycatch event occurs (i.e., the same probability distributions describe bycatch for every vessel in the fleet). In order for the CV of the BPUE estimate from simulations to more closely match the model-based estimate from the GLMM, we modified the fishery simulation step in the SCOTI functions to include an added vessel effect. The effect is additive on bycatch numbers for hauls with positive bycatch.
 
-We emphasize that the results below should not be interpreted absolutely as a representation of the reference fleet or as prescriptive advice for the fishery. We have parameterized a set of simulations in order to try to generate a realistic degree of precision. The results below should be interpreted relative to each other and relative to the base case, not in absolute terms. 
+We emphasize that the results below should not be interpreted absolutely as a representation of the Norwegian Reference Fleet or as prescriptive advice for the fishery. We have parameterized a set of simulations in order to try to generate a realistic degree of precision. The results below should be interpreted relative to each other and relative to the base case, not in absolute terms.
 
 ## Incorporating a vessel effect
 
-To account for non-independence of repeated sampling by vessels, we introduced additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with $\mu = 0$ and $\theta$ defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale. 
+To account for non-independence of repeated sampling by vessels, we introduced additional variation in bycatches for each vessel after bycatch observations were generated. This was done by adding random noise to the final estimate using a normal distribution with $\mu = 0$ and $\theta$ defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
 
-```{r echo=FALSE,warning=FALSE,fig.cap='Increasing coverage in a reference fleet with different vessel effects. The vessel effect that generates a similar CV of BPUE to the one estimated with a GLMM from reference fleet data.', fig.id='vessel-effect', fig.cap.style= "Figure Caption"}
+```{r echo=FALSE,warning=FALSE,fig.cap='Increasing coverage in a reference fleet with different vessel effects. The vessel effect that generates a similar CV of BPUE to the one estimated with a GLMM fitted to Norwegian Reference Fleet data.', fig.id='vessel-effect', fig.cap.style= "Figure Caption"}
 load('output/vessel_effect_cv_vs_BPUE_5000.rds')
 
 p1 <- bigdf |>
@@ -41,21 +41,22 @@ p1 <- bigdf |>
   theme_classic(base_size = 12)
 p1
 ```
-The vessel effect that generates a similar CV to the CV estimated from the reference fleet is 0.7. When the vessel effect is stronger, the coverage (number of vessels monitored) may never be high enough to achieve a similar $CV_{BPUE}$ (Figure \@ref(fig:vessel-effect)). Vessel effects may be caused by spatial or temporal differences in effort between vessels, skipper experience, gear differences, or other vessel-specific characteristics. In cases where these effects arise from skipper differences, vessel effects can be reduced through training programs. 
 
-## Comparison of reference fleet to a dedicated observer programme
+The vessel effect that generates a similar CV to the CV estimated from the Norwegian Reference Fleet is 0.7. When the vessel effect is stronger, the coverage (number of vessels monitored) may never be high enough to achieve a similar $CV_{BPUE}$ (Figure \@ref(fig:vessel-effect)). Vessel effects may be caused by spatial or temporal differences in effort between vessels, skipper experience, use of bird scaring devices, or other vessel-specific characteristics. In cases where these effects arise from skipper differences, vessel effects can be reduced through training programs.
 
-We simulated a hypothetical observer programme to evaluate the sampling effort needed to improve the performance of seabird bycatch estimation relative to current estimates that use Norwegian Reference Fleet data.
+## Comparison of Norwegian Reference Fleet to a dedicated observer program
 
-An observer programme would sample more vessels but fewer fishing operations. However, a refusal rate would be larger yet unknown, so we explored a wide range of values. The detection probability would increase given that the observer would have a single task. From the base case, we increased the `p_haul_obs` parameter and reduced `pmonitor` (Table \@ref(tab:params)) to represent these characteristics of a hypothetical observer programme. 
+We simulated a hypothetical observer program to evaluate the sampling effort needed to improve the performance of seabird bycatch estimation relative to current estimates that use Norwegian Reference Fleet data.
 
-In this simulation framework, a dedicated observer programme implemented on the full fishery, where the refusal rate is around 60%, would need a target coverage of about 50% in the fishery to estimate a CV comparable to what one would get from estimating CV(BPUE) from a reference fleet (Figure \@ref(fig:ref-obs)). 
+An observer program would sample more vessels but fewer fishing operations. However, a refusal rate would be larger yet unknown, so we explored a wide range of values. The detection probability would increase given that the observer would have a single task. From the base case, we increased the `p_haul_obs` parameter and reduced `pmonitor` (Table \@ref(tab:params)) to represent these characteristics of a hypothetical observer program.
 
-### Note about simulation behavior in the observer programme example
+In this simulation framework, a dedicated observer program implemented on the full fishery, where the refusal rate is around 60%, would need a target coverage of about 50% in the fishery to estimate a CV comparable to what one would get from estimating $CV_{BPUE}$ from a Norwegian Reference Fleet (Figure \@ref(fig:ref-obs)).
 
-Simulation outputs (with $N = 10,000$ simulations of the full process) have unstable behavior with increasing vessel coverage (Figure \@ref(fig:ref-obs)). We have confirmed that this is not due to additional variation introduced by the vessel effect, and suspect it is due to simulation model behavior that we haven't had time to inspect yet. 
+### Note about simulation behavior in the observer program example
 
-```{r echo=FALSE,warning=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program with different refusal rates (colored lines) compare to CV(BPUE) estimated for the reference fleet (horizontal dotted line). The target amount of coverage on the x axis is the target coverage; the realized coverage is the product of the target coverage and the refusal rate.', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
+Simulation outputs (with $N = 10,000$ simulations of the full process) have unstable behavior with increasing vessel coverage (Figure \@ref(fig:ref-obs)). We have confirmed that this is not due to additional variation introduced by the vessel effect, and suspect it is due to simulation model behavior that could not be identified within the timeframe of the workshop.
+
+```{r echo=FALSE,warning=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program with different refusal rates (colored lines) compare to CV(BPUE) estimated for the Norwegian Reference Fleet (horizontal dotted line). The target amount of coverage on the x axis is the target coverage; the realized coverage is the product of the target coverage and the refusal rate.', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
 load("output/observer_prog_cv_vs_BPUE_10000.rds")
 obs_program <- bigdf
 #nrow(obs_program) # this one is larger because it has different refusal rates
@@ -74,37 +75,36 @@ p2 <- obs_program |>
     yintercept = 0.5367243,
     lty = 2, lwd = 1,
     color = "grey"
-  ) + # This is the CV from the reference fleet we estimated above w vessel effect of 0.7
+  ) + # This is the CV from the Norwegian Reference Fleet we estimated above w vessel effect of 0.7
   xlab("Target proportion of vessels monitored") +
   ylab(expression(CV[BPUE]))
 
 p2
 ```
 
-
 ## Spatial and temporal overlap extension
-We built a framework for incorporating spatial and temporal hot spots, as PET species can have strong spatiotemporal patterns in density and representative monitoring requires characterizing this variation. This framework requires further testing and parameter tuning before it should be used, but we provide some recommendations here as to how simulations can and existing monitoring data can be used to provide scientific advice. 
 
-1. **Separate spatial, temporal, and spatiotemporal effects in simulation models.**
-2. **Take advantage of existing tagging and monitoring data to generate realistic simulations.** Spatiotemporal species distribution models (e.g., VAST; sdmTMB) can be fitted with monitoring and tagging data and used to generate simulated distribution data that can be used in a simulation-estimation framework.
-3. **Generate spatial observation models to simulate spatial stratification in monitoring programs.** Monitoring programs should capture the existing variation in fleets to the extent possible; useful advice on how to allocate bycatch monitoring effort spatially will require some information about spatial variation in bycatch.
+We built a framework for incorporating spatial and temporal hot spots, as PET species can have strong spatiotemporal patterns in density and representative monitoring requires characterizing this variation. This framework requires further testing and parameter tuning before it should be used, but we provide some recommendations here as to how simulations and existing monitoring data can be used to provide scientific advice.
 
+1.  **Separate spatial, temporal, and spatiotemporal effects in simulation models.**
+2.  **Take advantage of existing tagging and monitoring data to generate realistic simulations.** Spatiotemporal species distribution models (e.g., VAST; sdmTMB) can be fitted with monitoring and tagging data and used to generate simulated distribution data that can be used in a simulation-estimation framework.
+3.  **Generate spatial observation models to simulate spatial stratification in monitoring programs.** Monitoring programs should capture the existing variation in fleets to the extent possible; useful advice on how to allocate bycatch monitoring effort spatially will require some information about spatial variation in bycatch.
 
 ## SUMMARY BULLETS
 
-- The precision of bycatch per unit effort estimates ($CV_{BPUE}$) is sensitive to vessel effects, whether these are due to spatial, temporal, or spatiotemporal variation in effort. Practices for reducing the size of the vessel effect may be more cost effective than increasing observer coverage for a given fishery.
-- In order for a fishery to achieve a similar degree of precision in an observer programme as in a reference fleet, it will require more coverage, especially in cases where refusal rates could be high. As always, a reference fleet should include the full range of vessel-specific variation that practitioners believe exists in the full fleet. If refusal rates in the full fishery are high enough, an observer program will not be as useful as a reference fleet in reducing precision.
-
+-   The precision of bycatch per unit effort estimates ($CV_{BPUE}$) is sensitive to vessel effects, whether these are due to spatial, temporal, or spatiotemporal variation in effort. Practices for reducing or accounting for the size of the vessel effect may be more cost effective than increasing observer coverage for a given fishery.
+-   In order for a fishery to achieve a similar degree of precision in an observer program as in a reference fleet, it will require more coverage, especially in cases where refusal rates could be high. As always, a reference fleet should include the full range of vessel-specific variation that practitioners believe exists in the full fleet. If refusal rates in the full fishery are high enough, an observer program will not be as useful as a reference fleet in reducing precision.
 
 # ANNEX
 
 ## Parametrization for a seabird example
 
-The current example is based on data from the Reference fleet in Norway (IMR). More information on The Norwegian Reference Fleet can be found [here](https://hdl.handle.net/11250/2685855). In this particular case we consider bycatch of Northern fulmars (*Fulmarus glacialis*) in a sample of the offshore longline fishery where we have high confidence in that the reported numbers are close to actual numbers of bycatch.
+The current example is based on data from the Norwegian Reference Fleet in Norway. More information on The Norwegian Reference Fleet can be found [here](https://hdl.handle.net/11250/2685855). In this particular case we consider bycatch of Northern fulmars (*Fulmarus glacialis*) in a sample of the offshore longline fishery where we have high confidence in that the reported numbers are close to actual numbers of bycatch.
 
 It is worth keeping in mind that the observed probabilities of bycatch events and number of individuals bycaught per event could be biased values (e.g., already including an observation error that might might shape those parameters). Parameter values used in the 'base case' and their descriptions are in Table \@ref(tab:params).
 
 <!---BLOCK_LANDSCAPE_START--->
+
 ```{r echo=FALSE,tab.cap='Parameter values used in simulations.', tab.id='params',  tab.cap.style = "Table Caption"}
 params <- read.csv("norway_params.csv", header = TRUE)
 colnames(params) <- c("Simulation component","Parameter name","Description","Value in base case","Value in dedicated observer program")
@@ -114,9 +114,10 @@ params |>
   flextable::set_table_properties(layout = "autofit") |>
   flextable::theme_vanilla()
 ```
+
 <!---BLOCK_LANDSCAPE_STOP--->
 
-## {scoti} functions used
+## {SCOTI} functions used
 
 This code uses all simulation functions from the original SCOTI scripts, except for the `make_fishing_metier()` function, which has been modified to include a "vessel effect" (see below).
 
@@ -134,7 +135,7 @@ We use the `make_fishing_year_metier()` function to simulate the fishery in the 
 
 The next parameter controls the mean number of fishing events per boat day. In this case study vessel is the primary sampling unit, and we assume that one day at sea equals one haul (i.e., mean fishing event per boat day is one). The data represent one metier (L4, LLF_DES_0_0_0), so the probability of recording at one metier is set to one.
 
-The next couple of parameters concerns the probability of a bycatch event: The mean number of birds taken given an event, as well as the potential of more extreme events (probability of a large bycatch event as well as the mean number of individuals taken in those events). In the data there are signs of bycatch following a bimodial distribution, in the sense that we have some rare events with a much higher number ($max N \sim 36$) than the estimated mean bycatch ($\sim 2$ individuals per haul). The probability of a large event, as well as the number of birds captured in these events are however rather uncertain as they are indeed rare events in the data. So, these parameters could be considered a mixture between data driven and more qualitatively driven (based on informal communication with fishers). In the data, there are unexplained variation between vessels in reported bycatch numbers, i.e. a vessel effect of bycatch which might be attributed to a number of variables in reality (training, mitigation measures, spatio-temporal variation in fishing etc).
+The next couple of parameters concerns the probability of a bycatch event: The mean number of birds taken given an event, as well as the potential of more extreme events (probability of a large bycatch event as well as the mean number of individuals taken in those events). In the data there are signs of bycatch following a bimodal distribution, in the sense that we have some rare events with a much higher number ($max N \sim 36$) than the estimated mean bycatch ($\sim 2$ individuals per haul). The probability of a large event, as well as the number of birds captured in these events are however rather uncertain as they are indeed rare events in the data. So, these parameters could be considered a mixture between data driven and more qualitatively driven (based on informal communication with fishers). In the data, there are unexplained variation between vessels in reported bycatch numbers, i.e. a vessel effect of bycatch which might be attributed to a number of variables in reality (training, mitigation measures, spatio-temporal variation in fishing etc).
 
 ```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
 
@@ -171,18 +172,17 @@ p_monitor_metier <- 1
 
 ## Incorporating a vessel effect
 
-To account for non-independence of repeated sampling by vessels, we modified the fishery simulation step in the SCOTI functions to include an added vessel effect. This was done by introducing additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
+To account for non-independence of repeated sampling by vessels, we modified the fishery simulation step in the SCOTI functions to include an added vessel effect. This was done by introducing additional variation in bycatches for each vessels after bycatch observations were generated by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
 
-Including a vessel effect in the simulation model shifted the CV of the BPUE estimate from simulations to more closely match the model-based estimate from the GLMM.  The effect is additive on bycatch numbers for hauls with positive bycatch. 
+Including a vessel effect in the simulation model shifted the CV of the BPUE estimate from simulations to more closely match the model-based estimate from the GLMM. The effect is additive on bycatch numbers for hauls with positive bycatch.
 
 ## Spatial and temporal overlap extension
 
-We extended the original SCOTI framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hot spot(s) in this function can be switched on and off during specific time windows in a year. We modified the fishery-simulating function in SCOTI to include multiple areas, one of which can be identified as a hotspot (e.g., an area where seabirds might be actively feeding) and a temporal trend (e.g., an area with a breeding colony where there is a temporal effect on the probability of bycatch occurring). 
+We extended the original SCOTI framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hot spot(s) in this function can be switched on and off during specific periods in a year. We modified the fishery-simulating function in SCOTI to include multiple areas, one of which can be identified as a hotspot (e.g., an area where seabirds might be actively feeding) and a temporal trend (e.g., an area with a breeding colony where there is a temporal effect on the probability of bycatch occurring).
 
-The extended framework (in the `make_fishing_year_metier_space()` function) allows the analyst to control the amount of fishing effort across a simplified two-dimensional landscape. Because fisheries vary in intensity across areas during a year, the spatial extension we developed during the workshop controls fishing effort by area using a [beta istribution](https://en.wikipedia.org/wiki/Beta_distribution) to control skewness (i.e., how strong the hotspot is).
+The extended framework (in the `make_fishing_year_metier_space()` function) allows the analyst to control the amount of fishing effort across a simplified two-dimensional landscape. Because fisheries vary in intensity across areas during a year, the spatial extension we developed during the workshop controls fishing effort by area using a [beta distribution](https://en.wikipedia.org/wiki/Beta_distribution) to control skewness (i.e., how strong the hotspot is).
 
-Bycatch hot spots were parameterised as one or more areas (`hotspot.area`) of a total number of areas (`narea`), which then will act as a bycatch hot spot with increased probability of bycatch during the specified time period during a year (`time.periods.bycatch`). This option can be switched on or off with the parameter `spatio.temporal.bycatch.trend`. The trend in fishing effort is similarly switched on or off with the parameter `spatio.temporal.fishery.trend`. This allows for control over which areas the vessels in the fleet should target their fishing effort. To do this, two set of shape parameters controlling the shape of two different beta distributions should be defined. First, a general pattern of fishing activity across the total number of areas should be defined with the parameter `spatial.effort.skewness.general` (for example if the general pattern of the vessel is a uniform distribution of vessels across areas we use α = β = 1). Then one could shift this distribution using other values of α and β in the parameter `spatial.effort.skewness.special`, if there are specific time periods during the year (defined in `time.periods.fishery`) where the fishery is more focused in some areas. 
-
+Bycatch hotspots were parameterized as one or more areas (`hotspot.area`) of a total number of areas (`narea`), which then will act as a bycatch hotspot with increased probability of bycatch during the specified time period during a year (`time.periods.bycatch`). This option can be switched on or off with the parameter `spatio.temporal.bycatch.trend`. The trend in fishing effort is similarly switched on or off with the parameter `spatio.temporal.fishery.trend`. This allows for control over which areas the vessels in the fleet should target their fishing effort. To do this, two set of shape parameters controlling the shape of two different beta distributions should be defined. First, a general pattern of fishing activity across the total number of areas should be defined with the parameter `spatial.effort.skewness.general` (for example if the general pattern of the vessel is a uniform distribution of vessels across areas we use α = β = 1). Then one could shift this distribution using other values of α and β in the parameter `spatial.effort.skewness.special`, if there are specific time periods during the year (defined in `time.periods.fishery`) where the fishery is more focused in some areas.
 
 ```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
 
@@ -200,10 +200,8 @@ spatial.effort.skewness.special <- c(1.7,0.3)
 time.periods.fishery <- 32:60
 ```
 
-In its current state, the spatial extension produces patterns in the expected way but requires more testing in order to be useful for providing insight into how fisheries around hotspots should be managed. 
-
+In its current state, the spatial extension produces patterns in the expected way but requires more testing in order to be useful for providing insight into how fisheries around hotspots should be managed.
 
 ## Code availability
-The scripts used to generate these simulations are save in a fork of the original scoti repository [on GitHub](https://github.com/tomlclegg/scoti). 
 
-
+The scripts used to generate these simulations are saved in a fork of the original scoti repository [on GitHub](https://github.com/tomlclegg/scoti).
