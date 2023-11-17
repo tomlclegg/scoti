@@ -185,7 +185,7 @@ dev.off()
 # Parameterize simulations to represent an observer program, that you could compare to a reference fleet.
 
 p_monitor_boat.vec <- 2:31 / 31
-nsample <- 10000
+nsample <- 1000
 pmonitor <- 0.5 # Observers work same as crew shifts (on/off over 24 hours)
 p_monitor_metier <- 1
 bymetier <- FALSE
