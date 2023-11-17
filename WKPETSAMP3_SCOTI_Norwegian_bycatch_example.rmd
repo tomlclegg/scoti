@@ -40,7 +40,7 @@ p1 <- bigdf |>
   theme_classic(base_size = 12)
 p1
 ```
-The vessel effect that generates a similar CV to the 
+The vessel effect that generates a similar CV to the CV estimated from the reference fleet is 0.7. When the vessel effect is stronger, the coverage (number of vessels monitored) may never be high enough to achieve a similar $BPUE_{CV}$ (Figure \@ref(fig:vessel-effect)). Vessel effects may be caused by spatial or temporal differences in effort between vessels, skipper experience, gear differences, or other vessel-specific characteristics. In cases where these effects arise from skipper differences, vessel effects can be reduced through training programs 
 
 ## Comparison of reference fleet to a dedicated observer programme
 
@@ -48,7 +48,11 @@ We simulated a hypothetical observer programme to evaluate the sampling effort n
 
 An observer programme would sample more vessels but fewer fishing operations. However, a refusal rate would be larger yet unknown, so we explored a wide range of values. The detection probability would increase given that the observer would have a single task. From the base case, we increased the `p_haul_obs` parameter and reduced `pmonitor` (Table \@ref(tab:params)) to represent these characteristics of a hypothetical observer programme. 
 
-In the simulation framework, a dedicated observer programme implemented on the full fishery, where the refusal rate is around 60%, would need a target coverage of about 50% in the fishery to estimate a CV comparable to what one would get from estimating CV(BPUE) from a reference fleet (Figure \@ref(fig:ref-obs)).
+In this simulation framework, a dedicated observer programme implemented on the full fishery, where the refusal rate is around 60%, would need a target coverage of about 50% in the fishery to estimate a CV comparable to what one would get from estimating CV(BPUE) from a reference fleet (Figure \@ref(fig:ref-obs)).
+
+### Note about simulation behavior in the observer programme example
+
+Simulation outputs (with $N = 10,000$ simulations of the full process) have unstable behavior with increasing vessel coverage (Figure \@ref(fig:ref-obs)). We have confirmed that this is not due to additional variation introduced by the vessel effect, and suspect it is due to simulation model behavior that we haven't had time to inspect yet. 
 
 ```{r echo=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program with different refusal rates (colored lines) compare to CV(BPUE) estimated for the reference fleet (horizontal dotted line).', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
 load("output/observer_prog_cv_vs_BPUE_10000.rds")
@@ -75,6 +79,8 @@ p2 <- obs_program |>
 
 p2
 ```
+
+
 
 ## Spatial and temporal overlap extension
 
