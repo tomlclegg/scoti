@@ -25,8 +25,8 @@ Currently, the bycatch per unit effort (BPUE) for the reference fleet is estimat
 
 To account for non-independence of repeated sampling by vessels, we introduced additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
 
-```{r echo=FALSE}
-load('output/vessel_effect_cv_vs_BPUE.rds')
+```{r echo=FALSE,fig.cap='Increasing coverage in a reference fleet with different vessel effects. The vessel effect that generates a similar CV of BPUE to the one estimated with a GLMM from reference fleet data.', fig.id='vessel-effect', fig.cap.style= "Figure Caption"}
+load('output/vessel_effect_cv_vs_BPUE_5000.rds')
 
 p1 <- bigdf |>
   mutate(vessel.effect.vec = as.factor(vessel.effect.vec)) |>
@@ -34,7 +34,7 @@ p1 <- bigdf |>
              color = vessel.effect.vec, group = vessel.effect.vec)) +
   geom_line(lwd=1.2) +
   xlab("Proportion of vessels monitored") +
-  ylab("CV of BPUE estimate") +
+  ylab(expression(CV[BPUE])) +
   scale_color_manual("Vessel effect", values = wes_palette("Rushmore1", n = 5, type = 'discrete')[c(1,3,4,5)] ) +
   theme_classic(base_size = 16)
 p1
@@ -44,20 +44,33 @@ p1
 
 We simulated a hypothetical observer programme to evaluate the sampling effort needed to improve the performance of seabird bycatch estimation relative to current estimates that use Norwegian Reference Fleet data.
 
-An observer programme would sample more vessels but fewer fishing operations. However, a refusal rate would be larger yet unknown, so we explored a wide range of values. The detection probability would increase given that the observer would have a single task.
+An observer programme would sample more vessels but fewer fishing operations. However, a refusal rate would be larger yet unknown, so we explored a wide range of values. The detection probability would increase given that the observer would have a single task. From the base case, we increased the `p_haul_obs` parameter and reduced `pmonitor` (Table \@ref(tab:params)) to represent these characteristics of a hypothetical observer programme. 
 
-```{r echo=FALSE,warning=FALSE}
-load('output/observer_prog_cv_vs_BPUE_5000.rds')
+In the simulation framework, a dedicated observer programme implemented on the full fishery, where the refusal rate is around 60%, would need a target coverage of about 50% in the fishery to estimate a CV comparable to what one would get from estimating CV(BPUE) from a reference fleet (Figure \@ref(fig:ref-obs)).
 
-p2 <- bigdf %>%
-  mutate(refusal_rate.vec = as.factor(refusal_rate.vec)) %>%
-  ggplot(aes(x=p_monitor_boat.vec.p.,y=BPUE_CV_vec  ,
-             color = refusal_rate.vec, group = refusal_rate.vec)) +
-  geom_line(lwd=1.2) +
-  xlab("Proportion of vessels monitored") +
-  ylab("CV of BPUE estimate") +
-  scale_color_manual("Refusal rate", values = wes_palette("FantasticFox1",n = 4, type = 'discrete')) +
-  theme_classic(base_size = 16)
+```{r echo=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program with different refusal rates (colored lines) compare to CV(BPUE) estimated for the reference fleet (horizontal dotted line).', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
+load("output/observer_prog_cv_vs_BPUE_10000.rds")
+obs_program <- bigdf
+nrow(obs_program) # this one is larger because it has different refusal rates
+
+p2 <- obs_program |>
+  mutate(refusal_rate.vec = as.factor(refusal_rate.vec)) |>
+  ggplot(aes(
+    x = p_monitor_boat.vec.p., y = BPUE_CV_vec,
+    color = refusal_rate.vec,
+    group = refusal_rate.vec
+  )) +
+  geom_line(lwd = 1.2) +
+  theme_classic(base_size = 16) +
+  scale_color_manual("Refusal rate", values = wes_palette("FantasticFox1", n = 4, type = "discrete")) +
+  geom_hline(
+    yintercept = 0.5367243,
+    lty = 2, lwd = 1,
+    color = "grey"
+  ) + # This is the CV from the reference fleet we estimated above w vessel effect of 0.7
+  xlab("Target proportion of vessels monitored") +
+  ylab(expression(CV[BPUE]))
+
 p2
 ```
 
