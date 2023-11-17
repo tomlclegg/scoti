@@ -179,7 +179,7 @@ dev.off()
 # Parameterize simulations to represent an observer program, that you could compare to a reference fleet.
 
 p_monitor_boat.vec <- 2:31/31
-nsample <- 5000
+nsample <- 10000
 pmonitor <- 0.5 # Observers work same as crew shifts (on/off over 24 hours)
 p_monitor_metier <- 1
 bymetier <- FALSE
@@ -255,11 +255,31 @@ png("output/refusal_obsprogramme_cv_vs_BPUE.png", width = 8, height = 6, units =
 p2
 dev.off()
 
+
 # Plot comparing reference fleet to observer program.
-load('output/vessel_effect_cv_vs_BPUE.rds')
+load("output/vessel_effect_cv_vs_BPUE.rds")
 ref_fleet <- bigdf |>
-  filter(vessel.effect.vec==0.7) # filter to the estimated vessel effect
+  filter(vessel.effect.vec == 0.7) # filter to the estimated vessel effect
+nrow(ref_fleet)
 
-load('output/observer_prog_cv_vs_BPUE.rds')
+load("output/observer_prog_cv_vs_BPUE_5000.rds")
 obs_program <- bigdf
+nrow(obs_program) # this one is larger because it has different refusal rates
 
+df <- obs_program |>
+  left_join(ref_fleet, by = c("p_monitor_boat.vec.p.","BPUE_real_vec" )) |>
+  mutate(CV_difference = BPUE_CV_vec.x - BPUE_CV_vec.y) # BPUE for obs program minus ref fleet
+
+df |>
+  mutate(refusal_rate.vec = as.factor(refusal_rate.vec)) |>
+  ggplot(aes(x=p_monitor_boat.vec.p.,y=CV_difference,
+             color = refusal_rate.vec,
+             group=refusal_rate.vec)) +
+  geom_line(lwd=1.2) +
+  theme_classic(base_size = 16) +
+  geom_hline(yintercept = 0,lty = 2,lwd=1, color = "grey") +
+  xlab("Proportion of vessels monitored") +
+  ylab("Observer program CV - Reference fleet CV")
+
+
+head(df)
