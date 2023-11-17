@@ -24,7 +24,7 @@ Currently, the bycatch per unit effort (BPUE) for the reference fleet is estimat
 
 ## Incorporating a vessel effect
 
-To account for non-independence of repeated sampling by vessels, we introduced additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale.
+To account for non-independence of repeated sampling by vessels, we introduced additional variation in bycatches across vessels after bycatch observations were generated. This was done by adding random noise to the final estimate with \mu = 0 and \theta defined as an additional parameter in the simulation (named `vessel.effect`). To ensure the additional variation didn't generate negative values, we applied it to log-transformed observations before back-transforming to the original scale. 
 
 ```{r echo=FALSE,warning=FALSE,fig.cap='Increasing coverage in a reference fleet with different vessel effects. The vessel effect that generates a similar CV of BPUE to the one estimated with a GLMM from reference fleet data.', fig.id='vessel-effect', fig.cap.style= "Figure Caption"}
 load('output/vessel_effect_cv_vs_BPUE_5000.rds')
@@ -40,8 +40,9 @@ p1 <- bigdf |>
   theme_classic(base_size = 12)
 p1
 ```
+The vessel effect that generates a similar CV to the 
 
-## Comparison to a dedicated observer programme
+## Comparison of reference fleet to a dedicated observer programme
 
 We simulated a hypothetical observer programme to evaluate the sampling effort needed to improve the performance of seabird bycatch estimation relative to current estimates that use Norwegian Reference Fleet data.
 
@@ -78,6 +79,11 @@ p2
 ## Spatial and temporal overlap extension
 
 We extended the original `{scoti}` framework to represent a situation where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hot spot(s) can also be switched on and of during a fishing year. The rationality for introducing hotspot areas for  bycatch is based on the spatiotemporal variation in species abundance across areas during a year. Furthermore, as fisheries also are likely to vary in intensity across areas during a year, the framework also have a possibility to vary the fishing effort the range of areas using different shape parameters of the [beta-distribution](https://en.wikipedia.org/wiki/Beta_distribution). We modified the fishery-simulating function in `{scoti}` to include multiple areas, one of which can be identified as a hotspot (e.g., an area where seabirds might be actively feeding) and a temporal trend (e.g., an area with a breeding colony where there is a temporal effect on the probability of bycatch occurring). 
+
+
+**NEED TO ADD RESULT DESCRIPTION FOR SPATIAL/TEMPORAL THING**
+**NEED TO ADD RESULT FIG(S) FOR SPATIAL/TEMPORAL THING**
+
 
 
 
@@ -183,4 +189,5 @@ time.periods.fishery <- 32:60
 
 ## Code availability
 The scripts used to generate these simulations are save in a fork of the original scoti repository [on GitHub](https://github.com/tomlclegg/scoti). 
+
 
