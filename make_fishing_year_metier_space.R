@@ -13,6 +13,7 @@
 #' @param mean.fishing.event.boat.day
 #' @param p.bycatch
 #' @param p.metier
+#' @param vessel.effect
 #' @param narea - integer. defines how many areas you want.
 #' @param stochastic
 #' @param spatio.temporal.fishery.trend logical (TRUE/FALSE).
@@ -29,7 +30,7 @@
 #' @examples
 make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.large.event = 20, p.large.event = 0.01,
                                            nboat = 100, mean.fishing.event.boat.day = 2, p.bycatch = c(0.1, .01), p.metier = c(.2, .8),
-                                           narea = 10, stochastic = TRUE, spatio.temporal.fishery.trend = TRUE, spatio.temporal.bycatch.trend = TRUE,
+                                           narea = 10, stochastic = TRUE,vessel.effect=0 ,spatio.temporal.fishery.trend = TRUE, spatio.temporal.bycatch.trend = TRUE,
                                            spatial.effort.skewness.general = c(1, 1), spatial.effort.skewness.special = c(1.7, 0.3),
                                            time.periods.fishery = 32:60, time.periods.bycatch = 32:60, hotspot.area = 10) {
   # p.metier is the proportion of vessel in the, here, length of p.bycatch metiers
@@ -102,6 +103,11 @@ make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.
     temp$nbycatch[temp$bycatch == 1] <- apply(cbind((1 - event.type) * rtpois(sum(temp$bycatch), mean.bycatch.event, a = 0), event.type * rtpois(sum(temp$bycatch), mean.bycatch.large.event, a = 0)), 1, max)
 
     fishing <- rbind(fishing, temp)
+    # Add vessel effects
+    tbl <- table(fishing$boat)
+    nbycatch.vessel.adj <- rnorm(n = length(tbl), mean = 0, sd = vessel.effect)
+    nbycatch.vessel.adj <- nbycatch.vessel.adj[match(fishing$boat, names(tbl))]
+    fishing$nbycatch <- round(exp(log(fishing$nbycatch) + nbycatch.vessel.adj))
   }
   #########
   ## so for this challenge we need to change the computation of the estimated total bycatch it becomes the estimated BPUE x estimated effort
