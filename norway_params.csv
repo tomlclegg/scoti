@@ -1,28 +1,19 @@
-Scenario,Simulation component,Parameter,Value,Description,Comment
-default,fishing,nboat,28,Size of the active fishing fleet,
-default,fishing,mean.fishing.event.boat.day,1,Mean number of fishing events per boat day,
-default,fishing,stochastic,FALSE,"Logical; should a vessel-specific mean number of events per vessel be used, or a single value for the entire fleet?",
-default,fishing,p.metier,1,Probability (proportion) of vessels belonging each metier,
-default,bycatch process,p.bycatch,0.12,Probability of bycatch event by haul and metier,
-default,bycatch process,p.large.event,0.007,"Given that a bycatch event occurs, the probability of a large bycatch event",
-default,bycatch process,mean.bycatch.event,2,"Given that a bycatch event occurs and that event is not large, the mean number of individuals caught at a 'normal' bycatch event",
-default,bycatch process,mean.bycatch.large.event,17.6,"Given that a bycatch event occurs and that event is large, the mean number of individuals",
-default,simulation parameter,nsample,1000,Number of samples to be taken from the fishing data,
-Reference fleet,observation,p_monitor_boat,0.096774194,Proportion of vessels monitored,
-Reference fleet,observation,pmonitor,1,Proportion of hauls monitored for each vessel,
-Reference fleet,observation,p_monitor_metier,1,Proportion of monitoring allocated to (each?) metier,
-Reference fleet,observation,bymetier,FALSE,Logical; whether sampling is stratified by metier?,
-Reference fleet,observation,boat_samp,TRUE,"If FALSE: sampling occurs at the fishing event level (haul); if TRUE: first sample vessels to be monitored, then sample hauls",
-Reference fleet,observation,refusal_rate,0,Probability that a sampled vessel is rejected due to refusal to allow observer onboard,
-Reference fleet,properties of an average monitoring event,p_haul_obs,1,Probability that a haul is observed ,
-Reference fleet,properties of an average monitoring event,detect_prob,0.7,Probability of detection of each individual in a bycatch event,
-Reference fleet,properties of an average monitoring event,misclassification,0,Probability of mis-identification of the bycaught species,
-Observer,observation,p_monitor_boat,2:31/31,Proportion of vessels monitored,
-Observer,observation,pmonitor,0.5,Proportion of hauls monitored for each vessel,Observers work same as crew shifts (on/off over 24 hours)
-Observer,observation,p_monitor_metier,1,Proportion of monitoring allocated to (each?) metier,
-Observer,observation,bymetier,FALSE,Logical; whether sampling is stratified by metier?,
-Observer,observation,boat_samp,TRUE,"If FALSE: sampling occurs at the fishing event level (haul); if TRUE: first sample vessels to be monitored, then sample hauls",
-Observer,observation,refusal_rate,"seq(0.1, 0.9, length.out = 4)",Probability that a sampled vessel is rejected due to refusal to allow observer onboard,Impossible to define as sensitive to too many factors
-Observer,properties of an average monitoring event,p_haul_obs,0.95,Probability that a haul is observed ,"dedicated programme has lower chance of missing observations, set to small, insignificant chance"
-Observer,properties of an average monitoring event,detect_prob,1,Probability of detection of each individual in a bycatch event,
-Observer,properties of an average monitoring event,misclassification,0,Probability of mis-identification of the bycaught species,
+Simulation component,Parameter name,Description,Value in base case,Value in dedicated observer program
+fishing,nboat,Size of the active fishing fleet,28,
+fishing,mean.fishing.event.boat.day,Mean number of fishing events per boat day,1,
+fishing,stochastic,"Logical; should a vessel-specific mean number of events per vessel be used, or a single value for the entire fleet?",FALSE,
+fishing,p.metier,Probability (proportion) of vessels belonging each metier,1,
+bycatch process,p.bycatch,Probability of bycatch event by haul and metier,0.12,
+bycatch process,p.large.event,"Given that a bycatch event occurs, the probability of a large bycatch event",0.007,
+bycatch process,mean.bycatch.event,"Given that a bycatch event occurs and that event is not large, the mean number of individuals caught at a 'normal' bycatch event",2,
+bycatch process,mean.bycatch.large.event,"Given that a bycatch event occurs and that event is large, the mean number of individuals",17.6,
+simulation parameter,nsample,Number of samples to be taken from the fishing data,1000,
+observation,p_monitor_boat,Proportion of vessels monitored,0.096774194,1
+observation,pmonitor,Proportion of hauls monitored for each vessel,1,0.5 (Observer works same as crew shifts: on/off over 24 hours)
+observation,p_monitor_metier,Proportion of monitoring allocated to (each?) metier,1,2:31/31
+observation,bymetier,Logical; whether sampling is stratified by metier?,FALSE,FALSE
+observation,boat_samp,"If FALSE: sampling occurs at the fishing event level (haul); if TRUE: first sample vessels to be monitored, then sample hauls",TRUE,TRUE
+observation,refusal_rate,Probability that a sampled vessel is rejected due to refusal to allow observer onboard,0,"seq(0.1, 0.9, length.out = 4) (This value is sensitive to too many factors so is varied in the simulations)"
+properties of an average monitoring event,p_haul_obs,Probability that a haul is observed ,1,0.95 (dedicated programme with trained observers has lower chance of missing observations)
+properties of an average monitoring event,detect_prob,Probability of detection of each individual in a bycatch event,0.7,1
+properties of an average monitoring event,misclassification,Probability of mis-identification of the bycaught species,0,0
