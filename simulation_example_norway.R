@@ -5,6 +5,7 @@
 # source the sim functions
 source("make_fishing_year_metier.r")
 source("monitor_BPUE_metier.R")
+source("make_fishing_year_metier_space.r")
 
 # Libraries
 library(dplyr)
@@ -272,4 +273,194 @@ png("output/refusal_obsprogramme_cv_vs_BPUE.png",
   width = 8, height = 6, units = "in", res = 200
 )
 p2
+dev.off()
+
+# Scenario 3: Spatio-temporal changes  ---------------------------------
+# Parameterize simulations to represent variations in seabird density and fishery effort across time and space.
+# Test 'spatial' function -------------------------------------------------
+source("make_fishing_year_metier_space.R")
+# Added params for when you're using the spatial version of the fn
+p.metier <- 1
+p.bycatch <- 0.12 # range is from 0.02 to 0.12
+p.large.event <- 0.3 #30% chance of big event if in hotspot
+mean.bycatch.event <- 2 # (rounded down from 2.4)
+mean.bycatch.large.event <- 17.6 # max in dataset is 36. This is the upper 25%ile
+nboat <- 28
+mean.fishing.event.boat.day <- 1
+stochastic <- FALSE
+narea <- 10
+hotspot.area=10
+spatio.temporal.fishery.trend <- TRUE # this turns on or off the other spatial/temporal
+spatio.temporal.bycatch.trend <- TRUE
+spatial.effort.skewness.general <- c(1.6,0.4)#Slight difference in allocation of vessels
+spatial.effort.skewness.special <- c(1.7,0.3)#Slight difference in allocation of vessels
+time.periods.fishery <- c(1:30, 270:365) # Two peaks in fishery intensity
+time.periods.bycatch <- 150:240 # Hotspot in summer
+
+
+# Figures for case study example ------------------------------------------
+# Scenario 3: With spatiotemp ----------------------------------------------
+nsample <- 1000
+vessel.effect.vec <- c(0.7)
+p_monitor_boat.vec <- (2:31) / 31
+pmonitor <- 1
+boat_samp <- TRUE
+p_haul_obs <- 1 # should be fixed at 1 per David
+detect_prob <- 0.7
+refusal_rate <- 0 # ignoring refusal for now
+misclassification <- 0
+bymetier <- FALSE
+p_monitor_metier <- 1
+bigdf_spatio <- vector()
+
+for (p in 1:length(p_monitor_boat.vec)) {
+  BPUE_real_vec <-BPUE_CV_vec <- BPUE_est_vec <- BPUE_bias_vec <- vector()
+  for (i in 1:length(vessel.effect.vec)) {
+    set.seed(123)
+    fishing<- make_fishing_year_metier_space(mean.bycatch.event = mean.bycatch.event,
+                                             mean.bycatch.large.event = mean.bycatch.large.event,
+                                             p.large.event = p.large.event,
+                                             nboat = nboat,
+                                             mean.fishing.event.boat.day = mean.fishing.event.boat.day,
+                                             p.bycatch = p.bycatch,
+                                             p.metier = p.metier,
+                                             narea = narea,
+                                             stochastic = stochastic,
+                                             spatio.temporal.fishery.trend = spatio.temporal.fishery.trend,
+                                             spatio.temporal.bycatch.trend = spatio.temporal.bycatch.trend,
+                                             spatial.effort.skewness.general =spatial.effort.skewness.general,
+                                             spatial.effort.skewness.special = spatial.effort.skewness.special,
+                                             time.periods.fishery = time.periods.fishery,
+                                             time.periods.bycatch = time.periods.bycatch,
+                                             hotspot.area = hotspot.area,
+                                             vessel.effect = vessel.effect.vec[i]
+    )
+    BPUE_real_vec[i] <- sum(fishing$nbycatch) / dim(fishing)[1]
+
+    obs_fishing <- monitor_BPUE_metier(
+      pmonitor = pmonitor,
+      nsample = nsample,
+      BPUE_real = BPUE_real,
+      fishing = fishing,
+      p_monitor_boat = p_monitor_boat.vec[p],
+      boat_samp = boat_samp,
+      p_haul_obs = p_haul_obs,
+      detect_prob = detect_prob,
+      refusal_rate = refusal_rate,
+      misclassification = misclassification,
+      bymetier = bymetier,
+      p_monitor_metier = p_monitor_metier
+    )
+
+    BPUE_bias_vec[i] <- (obs_fishing$BPUE_est - BPUE_real_vec[i]) / BPUE_real_vec[i]
+    BPUE_est_vec[i] <- obs_fishing$BPUE_est
+    BPUE_CV_vec[i] <- obs_fishing$CV
+
+  } #/end vessel effect loop
+  df <- data.frame(p_monitor_boat.vec[p],
+                   vessel.effect.vec,
+                   BPUE_real_vec,
+                   BPUE_est_vec,
+                   BPUE_CV_vec,
+                   BPUE_bias_vec)
+  bigdf_spatio <- rbind(bigdf_spatio,df)
+  cat(round(p/length(p_monitor_boat.vec) * 100), "% done \n")
+}
+
+save(bigdf_spatio, file = paste0('output/vessel_effect_cv_vs_BPUE_07_spatio_',nsample,'.rds'))
+#load('vessel_effect_cv_vs_BPUE_5000.rds')
+
+# Figures for case study example ------------------------------------------
+# Scenario 3: Without spatiotemp ----------------------------------------------
+spatio.temporal.fishery.trend <- FALSE # this turns on or off the other spatial/temporal
+spatio.temporal.bycatch.trend <- FALSE
+
+nsample <- 2000
+vessel.effect.vec <- 0.7
+p_monitor_boat.vec <- (2:31)/31
+bigdf_nospatio <- vector()
+
+for (p in 1:length(p_monitor_boat.vec)) {
+  BPUE_real_vec <-BPUE_CV_vec <- BPUE_est_vec <- BPUE_bias_vec <- vector()
+  for (i in 1:length(vessel.effect.vec)) {
+    set.seed(123)
+    fishing<- make_fishing_year_metier_space(mean.bycatch.event = mean.bycatch.event,
+                                             mean.bycatch.large.event = mean.bycatch.large.event,
+                                             p.large.event = p.large.event,
+                                             nboat = nboat,
+                                             mean.fishing.event.boat.day = mean.fishing.event.boat.day,
+                                             p.bycatch = p.bycatch,
+                                             p.metier = p.metier,
+                                             narea = narea,
+                                             stochastic = stochastic,
+                                             spatio.temporal.fishery.trend = spatio.temporal.fishery.trend,
+                                             spatio.temporal.bycatch.trend = spatio.temporal.bycatch.trend,
+                                             spatial.effort.skewness.general =spatial.effort.skewness.general,
+                                             spatial.effort.skewness.special = spatial.effort.skewness.special,
+                                             time.periods.fishery = time.periods.fishery,
+                                             time.periods.bycatch = time.periods.bycatch,
+                                             hotspot.area = hotspot.area,
+                                             vessel.effect = vessel.effect.vec[i]
+    )
+    BPUE_real_vec[i] <- sum(fishing$nbycatch) / dim(fishing)[1]
+
+    obs_fishing <- monitor_BPUE_metier(
+      pmonitor = pmonitor,
+      nsample = nsample,
+      BPUE_real = BPUE_real,
+      fishing = fishing,
+      p_monitor_boat = p_monitor_boat.vec[p],
+      boat_samp = boat_samp,
+      p_haul_obs = p_haul_obs,
+      detect_prob = detect_prob,
+      refusal_rate = refusal_rate,
+      misclassification = misclassification,
+      bymetier = bymetier,
+      p_monitor_metier = p_monitor_metier
+    )
+
+    BPUE_bias_vec[i] <- (obs_fishing$BPUE_est - BPUE_real_vec[i]) / BPUE_real_vec[i]
+    BPUE_est_vec[i] <- obs_fishing$BPUE_est
+    BPUE_CV_vec[i] <- obs_fishing$CV
+
+  } #/end vessel effect loop
+  df <- data.frame(p_monitor_boat.vec[p],
+                   vessel.effect.vec,
+                   BPUE_real_vec,
+                   BPUE_est_vec,
+                   BPUE_CV_vec,
+                   BPUE_bias_vec)
+  bigdf_nospatio <- rbind(bigdf_nospatio,df)
+  cat(round(p/length(p_monitor_boat.vec) * 100), "% done \n")
+}
+
+save(bigdf_nospatio, file = paste0('output/vessel_effect_cv_vs_BPUE_07_nospatio_',nsample,'.rds'))
+#load('vessel_effect_cv_vs_BPUE_5000.rds')
+
+
+
+#####
+#Combining data for viz
+bigdf_spatio$spatial<-"True"
+bigdf_nospatio$spatial<-"False"
+bigdf3<-rbind(bigdf_spatio,bigdf_nospatio)
+
+
+library(ggplot2)
+library(wesanderson)
+
+p1 <- bigdf3 %>%
+  mutate(vessel.effect.vec = as.factor(vessel.effect.vec)) %>%
+  ggplot(aes(x=p_monitor_boat.vec.p.,y=BPUE_CV_vec  ,
+             color = spatial, group = spatial)) +
+  geom_line(lwd=1.2) +
+  xlab("Proportion of vessels monitored") +
+  ylab("CV of BPUE estimate") +
+  scale_color_manual("Spatio-temporal effect", values = wes_palette("Rushmore1",n = 5, type = 'discrete')[c(1,3,4,5)] ) +
+  theme_classic(base_size = 16)
+
+
+png("output\cv_vs_BPUE_2000_spatio_no_spatio.png", width = 8, height = 6, units = 'in', res = 200)
+
+p1
 dev.off()
