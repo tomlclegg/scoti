@@ -282,9 +282,9 @@ source("make_fishing_year_metier_space.R")
 # Added params for when you're using the spatial version of the fn
 p.metier <- 1
 p.bycatch <- 0.12 # range is from 0.02 to 0.12
-p.large.event <- 0.3 #30% chance of big event if in hotspot
+p.large.event <- 0.12 #12% chance of big event if in hotspot
 mean.bycatch.event <- 2 # (rounded down from 2.4)
-mean.bycatch.large.event <- 17.6 # max in dataset is 36. This is the upper 25%ile
+mean.bycatch.large.event <- 17 # max in dataset is 36. This is the upper 25%ile
 nboat <- 28
 mean.fishing.event.boat.day <- 1
 stochastic <- FALSE
