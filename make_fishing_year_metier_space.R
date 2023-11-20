@@ -66,7 +66,7 @@ make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.
 
   for (i in 2:365) {
     if (stochastic == TRUE) {
-      # mean.fishing.event.boat.day<-rtpois(nboat,mean.fishing.event.boat.day,a=0) #that's stays the same for the whole year #introduce stochasticity so that the mean number of events per boats vary
+      mean.fishing.event.boat.day<-rtpois(nboat,mean.fishing.event.boat.day,a=0) #that's stays the same for the whole year #introduce stochasticity so that the mean number of events per boats vary
       fishing.event.per.boat <- rpois(nboat, mean.fishing.event.boat.day)
     } else {
       fishing.event.per.boat <- rpois(nboat, mean.fishing.event.boat.day) # uniform fishing behaviour
@@ -91,16 +91,23 @@ make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.
     if (spatio.temporal.bycatch.trend == TRUE) {
         bycatch_high <- temp[temp$fishing.day %in% time.periods.bycatch & temp$area %in% hotspot.area, ]
         bycatch_high$bycatch <- rbinom(length(bycatch_high[,1]), 1, exp(log(p.bycatch)*log(2)))
+        event.type <- rbinom(sum(bycatch_high$bycatch), 1, p.large.event)
+        bycatch_high$nbycatch[bycatch_high$bycatch == 1] <- apply(cbind((1 - event.type) * rtpois(sum(bycatch_high$bycatch), mean.bycatch.event, a = 0), event.type * rtpois(sum(bycatch_high$bycatch), mean.bycatch.large.event, a = 0)), 1, max)
         bycatch_low <- temp[!temp$fishing.day %in% time.periods.bycatch | !temp$area %in% hotspot.area, ]
         bycatch_low$bycatch <- rbinom(length(bycatch_low[,1]), 1, p.bycatch)
+        bycatch_low$nbycatch[bycatch_low$bycatch == 1] <- rtpois(sum(bycatch_low$bycatch), mean.bycatch.event, a = 0)
+
         temp <- rbind(bycatch_high, bycatch_low)
     } else {
       temp <- temp
+      event.type <- rbinom(sum(temp$bycatch), 1, p.large.event)
+      temp$nbycatch[temp$bycatch == 1] <- apply(cbind((1 - event.type) * rtpois(sum(temp$bycatch), mean.bycatch.event, a = 0), event.type * rtpois(sum(temp$bycatch), mean.bycatch.large.event, a = 0)), 1, max)
+
 }
 
 
-    event.type <- rbinom(sum(temp$bycatch), 1, p.large.event)
-    temp$nbycatch[temp$bycatch == 1] <- apply(cbind((1 - event.type) * rtpois(sum(temp$bycatch), mean.bycatch.event, a = 0), event.type * rtpois(sum(temp$bycatch), mean.bycatch.large.event, a = 0)), 1, max)
+    #event.type <- rbinom(sum(temp$bycatch), 1, p.large.event)
+    #temp$nbycatch[temp$bycatch == 1] <- apply(cbind((1 - event.type) * rtpois(sum(temp$bycatch), mean.bycatch.event, a = 0), event.type * rtpois(sum(temp$bycatch), mean.bycatch.large.event, a = 0)), 1, max)
 
     fishing <- rbind(fishing, temp)
     # Add vessel effects
