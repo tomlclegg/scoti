@@ -59,8 +59,8 @@ make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.
   i <- 1
   fishing <- data.frame(fishing.day = fishing.day[i], boat = rep(fleet, fishing.event.per.boat), area = rep(fishing.area.dist, fishing.event.per.boat), metiers = rep(metier, fishing.event.per.boat), bycatch = rbinom(sum(fishing.event.per.boat), 1, p.bycatch[rep(metier, fishing.event.per.boat)]), nbycatch = 0)
 
-  event.type <- rbinom(sum(fishing$bycatch), 1, p.large.event)
-  fishing$nbycatch[fishing$bycatch == 1] <- apply(cbind((1 - event.type) * rtpois(sum(fishing$bycatch), mean.bycatch.event, a = 0), event.type * rtpois(sum(fishing$bycatch), mean.bycatch.large.event, a = 0)), 1, max)
+  #event.type <- rbinom(sum(fishing$bycatch), 1, p.large.event)
+  fishing$nbycatch[fishing$bycatch == 1] <- rtpois(sum(fishing$bycatch), mean.bycatch.event, a = 0)
 
 
 
@@ -98,11 +98,21 @@ make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.
         bycatch_low$nbycatch[bycatch_low$bycatch == 1] <- rtpois(sum(bycatch_low$bycatch), mean.bycatch.event, a = 0)
 
         temp <- rbind(bycatch_high, bycatch_low)
-    } else {
-      temp <- temp
-      event.type <- rbinom(sum(temp$bycatch), 1, p.large.event)
-      temp$nbycatch[temp$bycatch == 1] <- apply(cbind((1 - event.type) * rtpois(sum(temp$bycatch), mean.bycatch.event, a = 0), event.type * rtpois(sum(temp$bycatch), mean.bycatch.large.event, a = 0)), 1, max)
+        # Add vessel effects
+        tbl <- table(temp$boat)
+        nbycatch.vessel.adj <- rnorm(n = length(tbl), mean = 0, sd = vessel.effect)
+        nbycatch.vessel.adj <- nbycatch.vessel.adj[match(temp$boat, names(tbl))]
+        temp$nbycatch <- round(exp(log(temp$nbycatch) + nbycatch.vessel.adj))
 
+    } else {
+
+      event.type <- rbinom(sum(temp$bycatch), 1, 0.017)#currently fixed prob for large event if no spatio-temp trend --> use normal function
+      temp$nbycatch[temp$bycatch == 1] <- apply(cbind((1 - event.type) * rtpois(sum(temp$bycatch), mean.bycatch.event, a = 0), event.type * rtpois(sum(temp$bycatch), mean.bycatch.large.event, a = 0)), 1, max)
+      # Add vessel effects
+      tbl <- table(temp$boat)
+      nbycatch.vessel.adj <- rnorm(n = length(tbl), mean = 0, sd = vessel.effect)
+      nbycatch.vessel.adj <- nbycatch.vessel.adj[match(temp$boat, names(tbl))]
+      temp$nbycatch <- round(exp(log(temp$nbycatch) + nbycatch.vessel.adj))
 }
 
 
@@ -111,10 +121,10 @@ make_fishing_year_metier_space <- function(mean.bycatch.event = 1, mean.bycatch.
 
     fishing <- rbind(fishing, temp)
     # Add vessel effects
-    tbl <- table(fishing$boat)
-    nbycatch.vessel.adj <- rnorm(n = length(tbl), mean = 0, sd = vessel.effect)
-    nbycatch.vessel.adj <- nbycatch.vessel.adj[match(fishing$boat, names(tbl))]
-    fishing$nbycatch <- round(exp(log(fishing$nbycatch) + nbycatch.vessel.adj))
+    #tbl <- table(fishing$boat)
+    #nbycatch.vessel.adj <- rnorm(n = length(tbl), mean = 0, sd = vessel.effect)
+    #nbycatch.vessel.adj <- nbycatch.vessel.adj[match(fishing$boat, names(tbl))]
+    #fishing$nbycatch <- round(exp(log(fishing$nbycatch) + nbycatch.vessel.adj))
   }
   #########
   ## so for this challenge we need to change the computation of the estimated total bycatch it becomes the estimated BPUE x estimated effort
