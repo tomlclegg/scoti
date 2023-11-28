@@ -18,7 +18,7 @@ p.bycatch <- 0.12 # range is from 0.02 to 0.12
 p.large.event <- 0.007
 mean.bycatch.event <- 2 # (rounded down from 2.4)
 mean.bycatch.large.event <- 17.6 # max in dataset is 36. This is the upper 25%ile
-nboat <- 28
+nboat <- 31
 mean.fishing.event.boat.day <- 1
 stochastic <- FALSE
 
@@ -186,12 +186,12 @@ dev.off()
 # Parameterize simulations to represent an observer program, that you could compare to a reference fleet.
 
 p_monitor_boat.vec <- 2:31 / 31
-nsample <- 2000
+nsample <- 10000
 pmonitor <- 0.5 # Observers work same as crew shifts (on/off over 24 hours)
 p_monitor_metier <- 1
 bymetier <- FALSE
 boat_samp <- TRUE
-refusal_rate.vec <- round(seq(0.1, 0.9, length.out = 4), digits = 2) # Impossible to define as sensitive to too many factors
+refusal_rate.vec <- c(1/10, 1/3, 2/3, 9/10) # Impossible to define as sensitive to too many factors
 p_haul_obs <- 0.95 # dedicated programme has lower chance of missing observations, set to small, insignificant chance
 detect_prob <- 1
 misclassification <- 0
@@ -252,7 +252,7 @@ obs_program <- bigdf
 nrow(obs_program) # this one is larger because it has different refusal rates
 
 p2 <- obs_program |>
-  mutate(refusal_rate.vec = as.factor(refusal_rate.vec)) |>
+  mutate(refusal_rate.vec = as.factor(round(refusal_rate.vec, 2))) |>
   ggplot(aes(
     x = p_monitor_boat.vec.p., y = BPUE_CV_vec,
     color = refusal_rate.vec,
@@ -260,14 +260,18 @@ p2 <- obs_program |>
   )) +
   geom_line(lwd = 1.2) +
   theme_classic(base_size = 16) +
-  scale_color_manual("Refusal rate", values = wes_palette("FantasticFox1", n = 4, type = "discrete")) +
+  scale_color_manual("Refusal rate", values = wes_palette("Moonrise2", n = 4, type = "discrete")) +
   geom_hline(
-    yintercept = 0.5367243,
+    yintercept = obs_fishing$CV,
     lty = 2, lwd = 1,
     color = "grey"
   ) + # This is the CV from the reference fleet we estimated above w vessel effect of 0.7
+  geom_vline(xintercept = 3/31,
+             lty = 2, lwd = 1,
+             colour = "grey") +
   xlab("Target proportion of vessels monitored") +
-  ylab(expression(CV[BPUE]))
+  ylab(expression(CV[BPUE])) +
+  guides(colour = guide_legend(reverse=T))
 
 png("output/refusal_obsprogramme_cv_vs_BPUE.png",
   width = 8, height = 6, units = "in", res = 200
