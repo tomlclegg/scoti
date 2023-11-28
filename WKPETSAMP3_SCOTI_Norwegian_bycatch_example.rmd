@@ -87,7 +87,7 @@ p2
 We built a framework for incorporating spatial and temporal hot spots (i.e., areas and time periods where the probability of bycatch events and number of bycaught individuals are higher than average), as PET species can have strong spatiotemporal patterns in density and representative monitoring requires characterizing this variation. The extended framework also includes the possibility to change the fishery intensity in space and time. This allows for a the opportunity to test how well the monitoring captures true BPUE during different scenarios of overlap between species and fisheries. This framework requires further testing and parameter tuning before it should be used, but we provide some recommendations here as to how simulations and existing monitoring data can be used to provide scientific advice.
 
 1.  **Separate spatial, temporal, and spatiotemporal effects in simulation models.**
-We extended the original SCOTI framework to represent situations where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hot spot(s) in this function can be switched on and off during specific periods in a year. We modified the fishery-simulating function in SCOTI to include multiple areas, one of which can be identified as a hotspot (e.g., an area where seabirds might be actively feeding) and a temporal trend (e.g., an area with a breeding colony where there is a temporal effect on the probability of bycatch occurring).
+We extended the original SCOTI framework to represent situations where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hotspot(s) in this function can be switched on and off during specific periods in a year. We modified the fishery-simulating function in SCOTI to include multiple areas, one of which can be identified as a hotspot (e.g., an area where seabirds might be actively feeding) and a temporal trend (e.g., an area with a breeding colony where there is a temporal effect on the probability of bycatch occurring). The inclusion of a spatiotemporal bycatch hotspots increased the real BPUE in the simulation of the Norwegian case study, as the simulation was pre tuned to not account for spatiotemporal changes in mean BPUE. The added bycatch in the hotspot area was thus basically treated as an addition to the data generated in the simulation without hotspot, increasing the mean overall BPUE. We did not have enough information in the real data to specifically parameterize how the BPUE changes between hotspot areas and non-hotspot areas in the simulation. As the mean BPUE is already a rather small number (close to zero), a rather small increase in the mean will also reduce the CV as long as the standard deviation of mean BPUE does not change to much. 
 2.  **Take advantage of existing tagging and monitoring data to generate realistic simulations.** Spatiotemporal species distribution models (e.g., VAST; sdmTMB) can be fitted with monitoring and tagging data and used to generate simulated distribution data that can be used in a simulation-estimation framework.
 3.  **Generate spatial observation models to simulate spatial stratification in monitoring programs.** Monitoring programs should capture the existing variation in fleets to the extent possible; useful advice on how to allocate bycatch monitoring effort spatially will require some information about spatial variation in bycatch.
 
@@ -124,6 +124,7 @@ p1
 
 -   The precision of bycatch per unit effort estimates ($CV_{BPUE}$) is sensitive to vessel effects, whether these are due to spatial, temporal, or spatiotemporal variation in effort. Practices for reducing or accounting for the size of the vessel effect may be more cost effective than increasing observer coverage for a given fishery.
 -   In order for a fishery to achieve a similar degree of precision in an observer program as in a reference fleet, it will require more coverage, especially in cases where refusal rates could be high. As always, a reference fleet should include the full range of vessel-specific variation that practitioners believe exists in the full fleet. If refusal rates in the full fishery are high enough, an observer program will not be as useful as a reference fleet in reducing precision.
+-   The precision of bycatch per unit effort estimates from the monitoring effort ($CV_{BPUE}$) is sensitive to the real BPUE in the fishing fleet. This is an artifact of how CV is calculated, and that the mean BPUE is often a number close to zero for PETs. A small increase in mean BPUE between simulations, whiteout large changes in the standard deviation, will produce in general lower CV across most proportions of monitored effort as long as the monitoring is sufficient to include some extreme bycatch event in the hot spot area.  
 
 # ANNEX
 
@@ -189,7 +190,7 @@ We don't have any actual data to calculate detection probability of individual b
 ```{r,warning=FALSE,message=FALSE,echo=TRUE,results='hide',eval=FALSE}
 # Simulate monitoring
 pmonitor <- 1
-nsample <- 100 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
+nsample <- 2000 # How many times to run - this is independent of the fishery, it's just how many draws you want to do.
 p_monitor_boat <- 3/31 #  n boats that were willing to report seabirds
 boat_samp <- TRUE
 p_haul_obs <- 1 # should be fixed at 1 per David
@@ -220,14 +221,14 @@ Bycatch hotspots were parameterized as one or more areas (`hotspot.area`) of a t
 spatio.temporal.bycatch.trend <- TRUE #switch that turn on (TRUE) or off (FALSE) bycatch variability
 narea <- 10 # Defines the total number of areas in the focal fishery, integr
 hotspot.area = 10 #Defines a one or more areas between 1 and narea to  
-time.periods.bycatch <- 32:60 #Time periods of the year, in days, hotspot should be active. Can be multiple time periods 
+time.periods.bycatch <- 150:240 #Time periods of the year, in days, hotspot should be active. Can be multiple time periods 
 
 #Tuning of fishery 
+spatio.temporal.fishery.trend <- TRUE # this turns on or off the other spatial/temporal
+spatial.effort.skewness.general <- c(1.6,0.4)#A general allocation of vessels towards area 10
+spatial.effort.skewness.special <- c(1.7,0.3)#Slight difference in allocation of vessels (even more toward 10)
+time.periods.fishery <- c(1:30, 270:365) # Two peaks in fishery intensity
 
-spatio.temporal.fishery.trend <- TRUE # this turns on or off the other spatial/temporal 
-spatial.effort.skewness.general <- c(1,1)
-spatial.effort.skewness.special <- c(1.7,0.3)
-time.periods.fishery <- 32:60
 ```
 
 In its current state, the spatial extension produces patterns in the expected way but requires more testing in order to be useful for providing insight into how fisheries around hotspots should be managed.
