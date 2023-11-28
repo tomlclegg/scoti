@@ -186,7 +186,7 @@ dev.off()
 # Parameterize simulations to represent an observer program, that you could compare to a reference fleet.
 
 p_monitor_boat.vec <- 2:31 / 31
-nsample <- 1000
+nsample <- 2000
 pmonitor <- 0.5 # Observers work same as crew shifts (on/off over 24 hours)
 p_monitor_metier <- 1
 bymetier <- FALSE
@@ -300,7 +300,7 @@ time.periods.bycatch <- 150:240 # Hotspot in summer
 
 # Figures for case study example ------------------------------------------
 # Scenario 3: With spatiotemp ----------------------------------------------
-nsample <- 1000
+nsample <- 2000
 vessel.effect.vec <- c(0.7)
 p_monitor_boat.vec <- (2:31) / 31
 pmonitor <- 1
@@ -315,7 +315,7 @@ bigdf_spatio <- vector()
 
 for (p in 1:length(p_monitor_boat.vec)) {
   BPUE_real_vec <-BPUE_CV_vec <- BPUE_est_vec <- BPUE_bias_vec <- vector()
-  for (i in 1:length(vessel.effect.vec)) {
+  for (j in 1:length(vessel.effect.vec)) {
     set.seed(123)
     fishing<- make_fishing_year_metier_space(mean.bycatch.event = mean.bycatch.event,
                                              mean.bycatch.large.event = mean.bycatch.large.event,
@@ -333,9 +333,9 @@ for (p in 1:length(p_monitor_boat.vec)) {
                                              time.periods.fishery = time.periods.fishery,
                                              time.periods.bycatch = time.periods.bycatch,
                                              hotspot.area = hotspot.area,
-                                             vessel.effect = vessel.effect.vec[i]
+                                             vessel.effect = vessel.effect.vec[j]
     )
-    BPUE_real_vec[i] <- sum(fishing$nbycatch) / dim(fishing)[1]
+    BPUE_real_vec[j] <- sum(fishing$nbycatch) / dim(fishing)[1]
 
     obs_fishing <- monitor_BPUE_metier(
       pmonitor = pmonitor,
@@ -352,9 +352,9 @@ for (p in 1:length(p_monitor_boat.vec)) {
       p_monitor_metier = p_monitor_metier
     )
 
-    BPUE_bias_vec[i] <- (obs_fishing$BPUE_est - BPUE_real_vec[i]) / BPUE_real_vec[i]
-    BPUE_est_vec[i] <- obs_fishing$BPUE_est
-    BPUE_CV_vec[i] <- obs_fishing$CV
+    BPUE_bias_vec[j] <- (obs_fishing$BPUE_est - BPUE_real_vec[j]) / BPUE_real_vec[j]
+    BPUE_est_vec[j] <- obs_fishing$BPUE_est
+    BPUE_CV_vec[j] <- obs_fishing$CV
 
   } #/end vessel effect loop
   df <- data.frame(p_monitor_boat.vec[p],
@@ -375,9 +375,9 @@ save(bigdf_spatio, file = paste0('output/vessel_effect_cv_vs_BPUE_07_spatio_',ns
 spatio.temporal.fishery.trend <- FALSE # this turns on or off the other spatial/temporal
 spatio.temporal.bycatch.trend <- FALSE
 
-nsample <- 2000
-vessel.effect.vec <- 0.7
-p_monitor_boat.vec <- (2:31)/31
+#nsample <- 200
+#vessel.effect.vec <- 0.7
+#p_monitor_boat.vec <- (2:31)/31
 bigdf_nospatio <- vector()
 
 for (p in 1:length(p_monitor_boat.vec)) {
@@ -438,11 +438,12 @@ save(bigdf_nospatio, file = paste0('output/vessel_effect_cv_vs_BPUE_07_nospatio_
 #load('vessel_effect_cv_vs_BPUE_5000.rds')
 
 
-
 #####
 #Combining data for viz
+
 bigdf_spatio$spatial<-"True"
 bigdf_nospatio$spatial<-"False"
+#bigdf_simspatio$spatial<-"Sim"
 bigdf3<-rbind(bigdf_spatio,bigdf_nospatio)
 
 
@@ -460,7 +461,7 @@ p1 <- bigdf3 %>%
   theme_classic(base_size = 16)
 
 
-png("output\cv_vs_BPUE_2000_spatio_no_spatio.png", width = 8, height = 6, units = 'in', res = 200)
+png("output/cv_vs_BPUE_2000_spatio_no_spatio.png", width = 8, height = 6, units = 'in', res = 200)
 
 p1
 dev.off()

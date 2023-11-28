@@ -84,12 +84,41 @@ p2
 
 ## Spatial and temporal overlap extension
 
-We built a framework for incorporating spatial and temporal hot spots, as PET species can have strong spatiotemporal patterns in density and representative monitoring requires characterizing this variation. The extended framework also includes the possibility to change the fishery     This framework requires further testing and parameter tuning before it should be used, but we provide some recommendations here as to how simulations and existing monitoring data can be used to provide scientific advice.
+We built a framework for incorporating spatial and temporal hot spots (i.e., areas and time periods where the probability of bycatch events and number of bycaught individuals are higher than average), as PET species can have strong spatiotemporal patterns in density and representative monitoring requires characterizing this variation. The extended framework also includes the possibility to change the fishery intensity in space and time. This allows for a the opportunity to test how well the monitoring captures true BPUE during different scenarios of overlap between species and fisheries. This framework requires further testing and parameter tuning before it should be used, but we provide some recommendations here as to how simulations and existing monitoring data can be used to provide scientific advice.
 
 1.  **Separate spatial, temporal, and spatiotemporal effects in simulation models.**
 We extended the original SCOTI framework to represent situations where there is spatial variation in the probability of a bycatch event occurring (i.e., bycatch hot spot(s)). The bycatch hot spot(s) in this function can be switched on and off during specific periods in a year. We modified the fishery-simulating function in SCOTI to include multiple areas, one of which can be identified as a hotspot (e.g., an area where seabirds might be actively feeding) and a temporal trend (e.g., an area with a breeding colony where there is a temporal effect on the probability of bycatch occurring).
 2.  **Take advantage of existing tagging and monitoring data to generate realistic simulations.** Spatiotemporal species distribution models (e.g., VAST; sdmTMB) can be fitted with monitoring and tagging data and used to generate simulated distribution data that can be used in a simulation-estimation framework.
 3.  **Generate spatial observation models to simulate spatial stratification in monitoring programs.** Monitoring programs should capture the existing variation in fleets to the extent possible; useful advice on how to allocate bycatch monitoring effort spatially will require some information about spatial variation in bycatch.
+
+```{r echo=FALSE,warning=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program where there are spatiotemporal variations in seabird densities and fisheries, and for a situation without spatiotemporal variations.', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
+load("output/vessel_effect_cv_vs_BPUE_07_nospatio_2000.rds")
+load("output/vessel_effect_cv_vs_BPUE_07_spatio_2000.rds")
+obs_program <- bigdf
+#nrow(obs_program) # this one is larger because it has different refusal rates
+
+bigdf_spatio$spatial<-"True"
+bigdf_nospatio$spatial<-"False"
+#bigdf_simspatio$spatial<-"Sim"
+bigdf3<-rbind(bigdf_spatio,bigdf_nospatio)
+
+
+library(ggplot2)
+library(wesanderson)
+
+p1 <- bigdf3 %>%
+  mutate(vessel.effect.vec = as.factor(vessel.effect.vec)) %>%
+  ggplot(aes(x=p_monitor_boat.vec.p.,y=BPUE_CV_vec  ,
+             color = spatial, group = spatial)) +
+  geom_line(lwd=1.2) +
+  xlab("Proportion of vessels monitored") +
+  ylab("CV of BPUE estimate") +
+  scale_color_manual("Spatio-temporal effect", values = wes_palette("Rushmore1",n = 5, type = 'discrete')[c(1,3,4,5)] ) +
+  theme_classic(base_size = 16)
+
+
+p1
+```
 
 ## SUMMARY BULLETS
 
