@@ -54,7 +54,7 @@ In this simulation framework, a dedicated observer program implemented on the fu
 
 ### Note about simulation behavior in the observer program example
 
-Simulation outputs (with $N = 10,000$ simulations of the full process) have unstable behavior with increasing vessel coverage (Figure \@ref(fig:ref-obs)). We have confirmed that this is not due to additional variation introduced by the vessel effect, and suspect it is due to simulation model behavior that could not be identified within the timeframe of the workshop.
+The simulated observer programme exhibits a step-wise decrease in $CV_{BPUE}$, which increases with refusal rate. This is due to large refusal rate suppressing the realized vessel sampling. Large refusal rates mean that even though target proportion increases, the realised proportion doesn't change. Therefore, CV stays constant until the target proportion overcomes the refusal rate enough to add one more vessel. In addition, the small size of the fishery (31 vessels) magnifies the effect.
 
 ```{r echo=FALSE,warning=FALSE,fig.cap='CV(BPUE) estimated from a simulated observer program with different refusal rates (colored lines) compared to CV(BPUE) estimated for the Norwegian Reference Fleet (horizontal dotted line). Current proportion of vessels monitored by the Norwegian Reference Fleet indicated by vertical dotted line. The target amount of coverage on the x axis is the target coverage; the realized coverage is the product of the target coverage and the refusal rate.', fig.id='ref-obs', fig.cap.style= "Figure Caption"}
 load("output/observer_prog_cv_vs_BPUE_10000.rds")
